@@ -41,6 +41,7 @@
 		
 		// More vars
 		var slides = $();
+		var data = {};
 		
 		
 		// Init
@@ -61,6 +62,11 @@
 				return Plugin;
 			}
 			
+			// Init data
+			data.total			= slides.length;
+			data.current		= undefined;
+			data.previous		= undefined;
+			
 			// Return
 			return Plugin;
 		};
@@ -71,6 +77,7 @@
 		var destroy = function() {
 			// Revert everything except element and settings
 			delete Plugin.slides;
+			delete Plugin.data;
 			
 			// Remove instance and return
 			element.removeData( name );
@@ -84,6 +91,7 @@
 			element: element,
 			slides: slides,
 			settings: settings,
+			data: data,
 			
 			init: init,
 			destroy: destroy,

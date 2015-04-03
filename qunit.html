@@ -352,7 +352,7 @@
 	QUnit.module( "Slideshow Basics" );
 	
 	
-	// Getting API
+	// API.slides
 	// --------------------------------------------------
 	QUnit.test( 'API.slides', function( assert ) {
 		
@@ -396,6 +396,40 @@
 		
 		// Stop init()
 		console.warn( 'PENDING!!!: API.slides: stop init() function if there\'s less than 2 slides' );
+	});
+	
+	
+	// API.data (basics)
+	// --------------------------------------------------
+	QUnit.test( 'API.data (basics)', function( assert ) {
+		
+		// Create objects
+		var Slider = $('<div id="test">').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div>' );
+		var API = Slider[ pluginName ]().data( pluginName );
+		
+		// Test
+		assert.strictEqual(
+			typeof API.data,
+			'object',
+			'All APIs must have a "data" object'
+		);
+		assert.ok(
+			(
+				API.data.hasOwnProperty( 'total' ) &&
+				API.data.hasOwnProperty( 'current' ) &&
+				API.data.hasOwnProperty( 'previous' )
+			),
+			'"total", "current" and "previous" must exist'
+		);
+		
+		// .destroy()
+		API.destroy();
+		assert.strictEqual(
+			API.data,
+			undefined,
+			'API.data must be removed on .destroy()'
+		);
+		
 	});
 	
 	
