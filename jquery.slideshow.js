@@ -1,5 +1,5 @@
 /*
- * slideshow v0.3
+ * slideshow v0.4
  * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
@@ -12,6 +12,7 @@
 	var name = 'slideshow';
 	var settingsName = name+'-settings';
 	var defaults = {
+		slides:	'.slide',
 	};
 	
 	
@@ -33,10 +34,13 @@
 			return new $[name]( element, settings );
 		}
 		
-		// Private
+		// Init vars
 		var Plugin = this;
 		element = $(element).first();
 		settings = $.extend( {}, defaults, settings, element.data( settingsName ) );
+		
+		// More vars
+		var slides = $();
 		
 		
 		// Init
@@ -50,7 +54,13 @@
 
 			// Update settings
 			$.extend( settings, newSettings );
-
+			
+			// Get slides
+			Plugin.slides = slides = element.find( settings.slides );
+			if( slides.length < 2 ) {
+				return Plugin;
+			}
+			
 			// Return
 			return Plugin;
 		};
@@ -60,17 +70,19 @@
 		// ------------------------------
 		var destroy = function() {
 			// Revert everything except element and settings
+			delete Plugin.slides;
 			
 			// Remove instance and return
 			element.removeData( name );
 			return Plugin;
-		}
+		};
 		
 		
 		// Return Public Data
 		// ------------------------------
 		$.extend( Plugin, {
 			element: element,
+			slides: slides,
 			settings: settings,
 			
 			init: init,

@@ -354,13 +354,48 @@
 	
 	// Getting API
 	// --------------------------------------------------
-	QUnit.test( 'Basics', function( assert ) {
+	QUnit.test( 'API.slides', function( assert ) {
 		
+		// Create objects
+		var Slider0 = $('<div id="test">').appendTo( Fixture );
+		var Slider1 = $('<div id="test1">').appendTo( Fixture ).append( '<div class="slide"></div>' );
+		var Slider2 = $('<div id="test2">').appendTo( Fixture ).append( '<div class="slideX"></div><div class="slideX"></div>' );
+		
+		var APIX = $[ pluginName ]( 'invalid' );
+		var API0 = Slider0[ pluginName ]().data( pluginName );
+		var API1 = Slider1[ pluginName ]().data( pluginName );
+		var API2 = Slider2[ pluginName ]({ slides:'.slideX' }).data( pluginName );
+		
+		// Test
+		assert.allInstancesOfjQuery(
+			[ APIX.slides, API0.slides, API1.slides, API2.slides ],
+			'All APIs must have a "slides" jQuery object'
+		);
+		assert.strictEqual(
+			API2.slides.length,
+			2,
+			'Slides should be selected based on the "slides" setting'
+		);
 		assert.ok(
-			true,
-			'---'
+			(
+				APIX.slides.length === 0 &&
+				API0.slides.length === 0 &&
+				API1.slides.length === 1 &&
+				API2.slides.length === 2
+			),
+			'API.slides should include all matching slides'
 		);
 		
+		// .destroy()
+		API2.destroy();
+		assert.strictEqual(
+			API2.slides,
+			undefined,
+			'API.slides must be removed on .destroy()'
+		);
+		
+		// Stop init()
+		console.warn( 'PENDING!!!: API.slides: stop init() function if there\'s less than 2 slides' );
 	});
 	
 	
