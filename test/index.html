@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Slideshow Testing</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link href="styles.css" rel="stylesheet">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="../jquery.slideshow.js"></script>
+	<script>
+		$(document).ready(function(){
+			
+			// Init slider
+			var Slider = $('#slider');
+			Slider.slideshow({
+				
+				autoplay:			true,	// always false if there's no "controlsPlay"
+				timer:				8000,	// must be enough to read all the content comfortably
+				pauseOnFocus:		true,	// must be true
+				
+				controlsPrev:		'#slider-controls .prev',
+				controlsNext:		'#slider-controls .next',
+				controlsPlay:		'#slider-controls .play',
+				controlsItems:		'#slider-controls .item',
+				
+			});
+			
+			// Get data
+			var SliderAPI = Slider.data( 'slideshow' );
+			console.log( SliderAPI );
+			
+		});
+	</script>
+</head>
+<body>
+
+
+
+<div class="container">
+<div class="wrapper">
+	
+	
+	<!-- CONTROLS -->
+	<div id="slider-controls" class="slider-ctrls-box">
+		<p class="slider-status">Showing slide
+			<span class="current">1</span>
+			of
+			<span class="total">3</span>
+		</p>
+		<ul class="slider-ctrls">
+			<li class="prev"></li>
+			<li class="play"></li>
+			<li class="next"></li>
+		</ul>
+		<ul class="slider-nav">
+			<li class="item"></li>
+		</ul>
+	</div>
+	
+	
+	<!-- SLIDER -->
+	<h3 id="slider-heading" class="visuallyhidden">Latest news</h3>
+	<div id="slider" class="slider" role="region" aria-labelledby="slider-heading">
+		
+		<!-- Timer -->
+		<div class="timer">
+			<div class="progress"></div>
+		</div>
+		
+		<!-- Slides -->
+		<ul>
+			<li class="slide">
+				<a href="#link1">
+					<img alt="slide 1" src="images/image1.jpg">
+					<div>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+				</a>
+			</li>
+			<li class="slide">
+				<a href="#link2">
+					<img alt="slide 2" src="images/image2.jpg">
+					<div>Integer sit amet gravida urna. In nec commodo felis.</div>
+				</a>
+			</li>
+			<li class="slide">
+				<a href="#link3">
+					<img alt="slide 3" src="images/image3.jpg">
+					<div>Fusce eu risus tristique, varius massa ac, malesuada diam.</div>
+				</a>
+			</li>
+		</ul>
+		
+	</div>
+	
+	
+</div><!-- .container -->
+</div><!-- .wrapper -->
+
+
+
+</body>
+</html>
