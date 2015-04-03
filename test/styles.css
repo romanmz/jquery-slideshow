@@ -123,6 +123,14 @@ a:hover {
 }
 .slide {
 	position: relative;
+	transition: all .5s;
+	opacity: .5;
+}
+.transitioning .slide {
+	opacity: .25;
+}
+.slide.selected {
+	opacity: 1;
 }
 .slide img {
 	display: block;

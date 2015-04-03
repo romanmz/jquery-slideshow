@@ -14,20 +14,30 @@
 			var Slider = $('#slider');
 			Slider.slideshow({
 				
-				autoplay:			true,	// always false if there's no "controlsPlay"
-				timer:				8000,	// must be enough to read all the content comfortably
-				pauseOnFocus:		true,	// must be true
+				// For Accessibility:
+				autoplay:		true,	// always false if there's no "controlsPlay"
+				timer:			8000,	// must be enough to read all the content comfortably
+				pauseOnFocus:	true,	// must be true
 				
-				controlsPrev:		'#slider-controls .prev',
-				controlsNext:		'#slider-controls .next',
-				controlsPlay:		'#slider-controls .play',
-				controlsItems:		'#slider-controls .item',
+				// Others:
+				speed:			1500,
+				controlsPrev:	'#slider-controls .prev',
+				controlsNext:	'#slider-controls .next',
+				controlsPlay:	'#slider-controls .play',
+				controlsItems:	'#slider-controls .item',
 				
 			});
 			
 			// Get data
 			var SliderAPI = Slider.data( 'slideshow' );
 			console.log( SliderAPI );
+			
+			// Change slides on click
+			var SlidesLinks = $('.slide a');
+			SlidesLinks.on( 'click', function(e){
+				SliderAPI.showSlide( SlidesLinks.index( $(this) ) );
+				e.preventDefault();
+			});
 			
 		});
 	</script>

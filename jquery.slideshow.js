@@ -12,7 +12,11 @@
 	var name = 'slideshow';
 	var settingsName = name+'-settings';
 	var defaults = {
-		slides:	'.slide',
+		slides:				'.slide',
+		speed:				500,
+		showFirst:			1,
+		classSelected:		'selected',
+		classTransition:	'transitioning',
 	};
 	
 	
@@ -66,6 +70,17 @@
 			data.total			= slides.length;
 			data.current		= undefined;
 			data.previous		= undefined;
+			data.isChanging		= false;
+			data.timerChange	= false;
+			data.speed			= settings.speed;
+			
+			// Show first slide
+			if( settings.showFirst == 'random' ) {
+				var firstSlide = Math.floor( Math.random() * data.total );
+			} else {
+				var firstSlide = settings.showFirst - 1;
+			}
+			showSlide( firstSlide, 0 );
 			
 			// Return
 			return Plugin;
@@ -85,6 +100,57 @@
 		};
 		
 		
+		// ShowSlide
+		// ------------------------------
+		var showSlide = function( newSlide, speed ) {
+			
+			// Check arguments
+			newSlide = parseInt( newSlide );
+			if( isNaN( newSlide ) ) throw Error( 'showSlide() requires a number as the first argument' );
+			if( typeof speed == 'undefined' ) speed = settings.speed;
+			
+			// Restrict newSlide
+			newSlide = parseInt( newSlide );
+			var lastSlide = data.total-1;
+			if( newSlide > lastSlide ) {
+				newSlide = lastSlide;
+			} else if( newSlide < 0 ) {
+				newSlide = 0;
+			}
+			
+			// Check status
+			if( data.isChanging || newSlide == data.current ) {
+				return Plugin;
+			}
+			
+			// Update data
+			data.isChanging	= true;
+			data.previous	= ( typeof data.current != 'undefined' && data.current != newSlide ) ? data.current : undefined;
+			data.current	= newSlide;
+			data.speed		= speed;
+			clearTimeout( data.timerChange );
+			
+			// Select slides
+			var currentSlide = slides.eq( data.current );
+			var otherSlides = slides.not( currentSlide );
+			
+			// Update classes
+			otherSlides.removeClass( settings.classSelected );
+			currentSlide.addClass( settings.classSelected );
+			otherSlides.removeAttr( 'aria-live' ).attr( 'aria-hidden', 'true' );
+			currentSlide.attr( 'aria-live', 'polite' ).removeAttr( 'aria-hidden' );
+			element.addClass( settings.classTransition );
+			
+			// Trigger events
+			data.timerChange = setTimeout(function(){
+				data.isChanging = false;
+				element.removeClass( settings.classTransition );
+			}, data.speed );
+			
+			return Plugin;
+		}
+		
+		
 		// Return Public Data
 		// ------------------------------
 		$.extend( Plugin, {
@@ -95,6 +161,7 @@
 			
 			init: init,
 			destroy: destroy,
+			showSlide: showSlide,
 		} );
 		return init();
 	}

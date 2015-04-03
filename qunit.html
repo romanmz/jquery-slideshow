@@ -433,6 +433,221 @@
 	});
 	
 	
+	// API.showSlide()
+	// --------------------------------------------------
+	QUnit.test( 'API.showSlide()', function( assert ) {
+		
+		// Create objects
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var Slides = Slider.find( '.slide' );
+		var Slide1 = Slides.eq(0);
+		var Slide2 = Slides.eq(1);
+		var Slide3 = Slides.eq(2);
+		var API = Slider[ pluginName ]().data( pluginName );
+		
+		
+		// First slide is already running
+		assert.notStrictEqual(
+			API.data.current,
+			undefined,
+			'Automatically show slide selected in "showFirst"'
+		);
+		
+		var done0 = assert.async();
+		function test0(){
+			
+			// Function is available
+			assert.equal(
+				typeof API.showSlide,
+				'function',
+				'API.showSlide() available'
+			);
+
+			// Check required settings
+			assert.ok(
+				(
+					API.data.hasOwnProperty( 'isChanging' ) &&
+					API.data.hasOwnProperty( 'speed' ) &&
+					API.data.hasOwnProperty( 'timerChange' )
+				),
+				'API.data: "isChanging", "speed" and "timerChange" must exist'
+			);
+			assert.ok(
+				(
+					API.settings.hasOwnProperty( 'speed' ) &&
+					API.settings.hasOwnProperty( 'classSelected' ) &&
+					API.settings.hasOwnProperty( 'classTransition' ) &&
+					API.settings.hasOwnProperty( 'showFirst' )
+				),
+				'API.settings: "speed", "showFirst", "classSelected" and "classTransition" must exist'
+			);
+
+			// Test "newSlide"
+			assert.throws(
+				function(){ API.showSlide() },
+				'"newSlide" is required and must be a number'
+			);
+
+			// Test default "speed"
+			API.showSlide( 1 );
+			assert.equal(
+				API.data.speed,
+				API.settings.speed,
+				'"speed" defaults to settings.speed'
+			);
+			
+			//
+			done0();
+			setTimeout( test1, API.data.speed+10 );
+		}
+		setTimeout( test0, API.data.speed+10 );
+		
+		// Test custom "speed"
+		var done1 = assert.async();
+		function test1(){
+			API.showSlide( 2, 5 );
+			assert.equal(
+				API.data.speed,
+				5,
+				'"speed" argument is used and stored as data'
+			);
+			done1();
+			setTimeout( test2, API.data.speed+10 );
+		}
+		
+		// Test min limit
+		var done2 = assert.async();
+		function test2() {
+			API.showSlide( -1, 0 );
+			assert.strictEqual(
+				API.data.current,
+				0,
+				'Limit newSlide to number of slides (min = 0)'
+			);
+			done2();
+			setTimeout( test3, API.data.speed+10 );
+		}
+		
+		// Test max limit
+		var done3 = assert.async();
+		function test3() {
+			API.showSlide( 5, 100 );
+			assert.strictEqual(
+				API.data.current,
+				2,
+				'Limit newSlide to number of slides (max = total)'
+			);
+			
+			// Cancel if "isChanging"
+			API.showSlide( 0 );
+			assert.notEqual(
+				API.data.current,
+				0,
+				'Cancel function if isChanging == true'
+			);
+			
+			done3();
+			setTimeout( test4, API.data.speed+10 );
+		}
+		
+		// Cancel if newSlide == data.current
+		var done4 = assert.async();
+		function test4() {
+			API.showSlide( 2, 8 );
+			assert.notEqual(
+				API.data.speed,
+				8,
+				'Cancel function if slideNum == data.current'
+			);
+			
+			// Update data.previous and current
+			var oldCurrent = API.data.current;
+			API.showSlide( 0, 0 );
+			assert.ok(
+				(
+					API.data.current === 0 &&
+					API.data.previous === oldCurrent
+				),
+				'Correctly update data.previous and data.current'
+			);
+			
+			done4();
+			setTimeout( test5, API.data.speed+10 );
+		}
+		
+		// Update data.previous and current
+		var done5 = assert.async();
+		function test5() {
+			
+			// Before
+			var isChanging1 = API.data.isChanging;
+			var correctSlidesClasses1 = (
+				Slide1.hasClass( API.settings.classSelected ) &&
+				!Slide2.hasClass( API.settings.classSelected ) &&
+				!Slide3.hasClass( API.settings.classSelected )
+			);
+			var correctAriaLive1 = (
+				Slide1.attr( 'aria-live' ) == 'polite' &&
+				!Slide2.is( '[aria-live]' ) &&
+				!Slide3.is( '[aria-live]' )
+			);
+			var correctAriaHidden1 = (
+				!Slide1.is( '[aria-hiden]' ) &&
+				Slide2.attr( 'aria-hidden' ) == 'true' &&
+				Slide3.attr( 'aria-hidden' ) == 'true'
+			);
+			var transitionClass1 = !Slider.hasClass( API.settings.classTransition );
+			
+			// During
+			API.showSlide( 1, 100 );
+			var isChanging2 = API.data.isChanging;
+			var transitionClass2 = Slider.hasClass( API.settings.classTransition );
+			
+			// After
+			setTimeout(function(){
+				var isChanging3 = API.data.isChanging;
+				var correctSlidesClasses2 = (
+					!Slide1.hasClass( API.settings.classSelected ) &&
+					Slide2.hasClass( API.settings.classSelected ) &&
+					!Slide3.hasClass( API.settings.classSelected )
+				);
+				var correctAriaLive2 = (
+					!Slide1.is( '[aria-live]' ) &&
+					Slide2.attr( 'aria-live' ) == 'polite' &&
+					!Slide3.is( '[aria-live]' )
+				);
+				var correctAriaHidden2 = (
+					Slide1.attr( 'aria-hidden' ) == 'true' &&
+					!Slide2.is( '[aria-hidden]' ) &&
+					Slide3.attr( 'aria-hidden' ) == 'true'
+				);
+				
+				// Test
+				assert.ok(
+					( !isChanging1 && isChanging2 && !isChanging3 ),
+					'Correctly update data.isChanging before and after transition'
+				);
+				assert.ok(
+					( correctSlidesClasses1 && correctSlidesClasses2 ),
+					'Correctly update "selected" class on slides'
+				);
+				assert.ok(
+					( correctAriaLive1 && correctAriaLive1 && correctAriaHidden1 && correctAriaHidden2 ),
+					'Correctly update aria attributes on slides'
+				);
+				assert.ok(
+					( transitionClass1 && transitionClass2 ),
+					'Correctly update "transition" class on slider'
+				);
+				
+				done5();
+			}, API.data.speed+10 );
+		}
+		
+		console.warn( 'PENDING!!!: API.showSlide(): test showFirst == \'random\'' );
+	});
+	
+	
 	
 	
 	
