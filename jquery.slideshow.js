@@ -1,6 +1,6 @@
 /*
- * _____ v0.3
- * http://github.com/romanmz/_____
+ * slideshow v0.3
+ * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
 
@@ -9,7 +9,7 @@
 	
 	// Private Shared Data
 	// ------------------------------
-	var name = 'plugin';
+	var name = 'slideshow';
 	var settingsName = name+'-settings';
 	var defaults = {
 	};
