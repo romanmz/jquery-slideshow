@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>QUnit Test 0.3</title>
+	<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.17.1.css">
+	<style>
+		.wrapper {
+			margin: 0 auto;
+			max-width: 900px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+<div class="wrapper">
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+</div>
+
+
+
+<!-- BEGIN SCRIPTS -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://code.jquery.com/qunit/qunit-1.17.1.js"></script>
+<script src="jquery.boilerplate.js"></script>
+<script>
+	
+	
+	
+	// INIT DATA
+	// ==================================================
+	
+	var Fixture = $('#qunit-fixture');
+	var pluginName = 'plugin';
+	
+	QUnit.assert.allInstancesOfjQuery = function( objects, message ) {
+		
+		var result = true;
+		var actual = 'jQuery';
+		var expected = 'jQuery';
+		
+		$.each( objects, function(i,object){
+			if( !( object instanceof jQuery ) ) {
+				result = false;
+				actual = typeof object;
+				return false;
+			}
+		});
+		
+		this.push( result, actual, expected, message );
+	}
+	QUnit.assert.allEqualTo = function( objects, expected, message ) {
+		
+		var result = true;
+		var actual = expected;
+		
+		$.each( objects, function(i,object){
+			if( object !== expected ) {
+				result = false;
+				actual = object;
+				return false;
+			}
+		});
+		
+		this.push( result, actual, expected, message );
+	}
+	
+	
+	
+	// INITIALIZING
+	// ==================================================
+	
+	QUnit.module( "Initializing" );
+	
+	
+	// Getting API
+	// --------------------------------------------------
+	QUnit.test( 'Getting API', function( assert ) {
+		
+		// Create objects
+		$('<div id="test1">').appendTo( Fixture );
+		$('<div id="test2">').appendTo( Fixture );
+		$('<div id="test3">').appendTo( Fixture );
+		
+		// Call function
+		var validAPI1 = $[pluginName]( '#test1' );
+		var validAPI2 = new $[pluginName]( '#test2' );
+		var validJQuery = $( '#test3' )[pluginName]();
+		var validAPI3 = validJQuery.data( pluginName );
+		
+		var invalidAPI1 = $[pluginName]( 'invalid' );
+		var invalidAPI2 = new $[pluginName]( 'invalid' );
+		var invalidJQuery = $( 'invalid' )[pluginName]();
+		var invalidAPI3 = invalidJQuery.data( pluginName );
+		
+		// Test
+		assert.ok(
+			(
+				validAPI1 instanceof jQuery[pluginName] &&
+				validAPI2 instanceof jQuery[pluginName] &&
+				invalidAPI1 instanceof jQuery[pluginName] &&
+				invalidAPI2 instanceof jQuery[pluginName]
+			),
+			'$.'+pluginName+'("") and new $.'+pluginName+'("") always return an API object (even if selector is not valid)'
+		);
+		assert.ok(
+			(
+				validJQuery instanceof jQuery &&
+				invalidJQuery instanceof jQuery
+			),
+			'$("").'+pluginName+'() always returns a jQuery object (even if selector is not valid)'
+		);
+		assert.ok(
+			validAPI3 instanceof jQuery[pluginName],
+			'$("").data( "'+pluginName+'" ) returns API object ONLY if selector was valid'
+		);
+		assert.strictEqual(
+			invalidAPI3,
+			null,
+			'$("").data( "'+pluginName+'" ) returns null if selector was not valid'
+		);
+	});
+	
+	
+	// Multiple Instantiations
+	// --------------------------------------------------
+	QUnit.test( 'Multiple Instantiations', function( assert ) {
+		
+		// Create objects
+		$('<div id="test1">').appendTo( Fixture );
+		$('<div id="test2">').appendTo( Fixture );
+		$('<div id="test3">').appendTo( Fixture );
+		
+		// Call function
+		var API1 = new $[pluginName]( '#test1' );
+		var API2 = $[pluginName]( '#test2' );
+		var API3 = $( '#test3' )[pluginName]().data( pluginName );
+		
+		// Test
+		assert.ok(
+			(
+				new $[pluginName]( 'invalid' ) !== new $[pluginName]( 'invalid' ) &&
+				$[pluginName]( 'invalid' ) !== $[pluginName]( 'invalid' ) &&
+				new $[pluginName]( 'invalid' ) !== $[pluginName]( 'invalid' )
+			),
+			'$.'+pluginName+'("") and new $.'+pluginName+'("") with invalid selectors always return a new API object'
+		);
+		assert.ok(
+			true,
+			'$("").'+pluginName+'() with invalid selector needs no testing, since it never creates an API'
+		);
+		assert.ok(
+			(
+				API1 === new $[pluginName]( '#test1' ) &&
+				API1 === $[pluginName]( '#test1' ) &&
+				API1 === $( '#test1' )[pluginName]().data( pluginName ) &&
+				
+				API2 === new $[pluginName]( '#test2' ) &&
+				API2 === $[pluginName]( '#test2' ) &&
+				API2 === $( '#test2' )[pluginName]().data( pluginName ) &&
+				
+				API3 === new $[pluginName]( '#test3' ) &&
+				API3 === $[pluginName]( '#test3' ) &&
+				API3 === $( '#test3' )[pluginName]().data( pluginName )
+			),
+			'Any type of call with a valid selector, always returns the first API created'
+		);
+	});
+	
+	
+	// Multiple Elements
+	// --------------------------------------------------
+	QUnit.test( 'Multiple Elements', function( assert ) {
+		
+		// Create objects
+		$('<div id="call2A">').appendTo( Fixture );
+		$('<div id="call2B">').appendTo( Fixture );
+		$('<div id="jquery2A">').appendTo( Fixture );
+		$('<div id="jquery2B">').appendTo( Fixture );
+		
+		// Get elements
+		var API1 = $[pluginName]( '#call2A, #call2B' );
+		$( '#jquery2A, #jquery2B' )[pluginName]();
+		
+		// Test
+		assert.ok(
+			(
+				$('#call2A').data( pluginName ) instanceof jQuery[pluginName] &&
+				typeof $('#call2B').data( pluginName ) === 'undefined'
+			),
+			"On $."+pluginName+"('multiple') calls, only the first element has API"
+		);
+		assert.ok(
+			(
+				$('#jquery2A').data( pluginName ) instanceof jQuery[pluginName] &&
+				$('#jquery2B').data( pluginName ) instanceof jQuery[pluginName] &&
+				$('#jquery2A').data( pluginName ) !== $('#jquery2B').data( pluginName )
+			),
+			"On $('multiple')."+pluginName+"(), each element has its own independent API"
+		);
+		
+		// Another test
+		$( '#call2A, #call2B' )[pluginName]();
+		assert.ok(
+			(
+				$('#call2A').data( pluginName ) === API1 &&
+				$('#call2B').data( pluginName ) instanceof jQuery[pluginName]
+			),
+			"$('multiple')."+pluginName+"() reuses existing APIs, or creates new ones if they don't exist"
+		);
+		
+	});
+	
+	
+	// API.element
+	// --------------------------------------------------
+	QUnit.test( 'API.element', function( assert ) {
+		
+		// Create objects
+		$('<div id="call1">').appendTo( Fixture );
+		$('<div id="call2A">').appendTo( Fixture );
+		$('<div id="call2B">').appendTo( Fixture );
+		$('<div id="jquery1">').appendTo( Fixture );
+		$('<div id="jquery2A">').appendTo( Fixture );
+		$('<div id="jquery2B">').appendTo( Fixture );
+		
+		// Get elements
+		var Invalid = $[pluginName]( 'invalid' ).element;
+		var Call1 = $[pluginName]( '#call1' ).element;
+		var Call2 = $[pluginName]( '#call2A, #call2B' ).element;
+		var jQuery1 = $( '#jquery1' )[pluginName]().data( pluginName ).element;
+		var jQuery2 = $( '#jquery2A, #jquery2B' )[pluginName]().data( pluginName ).element;
+		
+		// Test
+		assert.allInstancesOfjQuery(
+			[ Invalid, Call1, Call2, jQuery1, jQuery2 ],
+			'Is always jQuery (even if no valid selector was used)'
+		);
+		assert.strictEqual(
+			Invalid.length,
+			0,
+			'.length == 0 for $.'+pluginName+'( "invalid" ) calls'
+		);
+		assert.allEqualTo(
+			[ Call1.length, Call2.length, jQuery1.length, jQuery2.length ],
+			1,
+			'.length == 1 for ALL valid calls (even if selector matched many elements)'
+		);
+	});
+	
+	
+	// API.settings
+	// --------------------------------------------------
+	QUnit.test( 'API.settings', function( assert ) {
+		
+		// --- Test type of variable
+		$('<div id="call">').appendTo( Fixture );
+		$('<div id="jquery">').appendTo( Fixture );
+		var API0 = $[pluginName]( 'invalid' );
+		var API1 = $[pluginName]( '#call' );
+		var API2 = $( '#jquery' )[pluginName]().data( pluginName );
+		assert.ok(
+			(
+				typeof API0.settings == 'object' &&
+				typeof API1.settings == 'object' &&
+				typeof API2.settings == 'object'
+			),
+			'Is always an object (even if no valid selector was used)'
+		);
+		
+		// --- Test Changing Defaults
+		$[pluginName].prototype.defaults({ loremipsum:1 });
+		var Defaults1 = $[pluginName]( 'invalid' );
+		$[pluginName].prototype.defaults({ loremipsum:2 });
+		var Defaults2 = $[pluginName]( 'invalid' );
+		assert.ok(
+			(
+				Defaults1.settings.loremipsum === 1 &&
+				Defaults2.settings.loremipsum === 2
+			),
+			'Can change default settings by calling $.'+pluginName+'.prototype.defaults()'
+		);
+		
+		// --- Test settings overriding
+		$('<div id="overrides" data-'+pluginName+'-settings=\'{"loremipsum":4}\'>').appendTo( Fixture );
+		var Overrides1 = $[pluginName]( '',{ loremipsum:3 });
+		var Overrides2 = $[pluginName]( '#overrides',{ loremipsum:3 });
+		assert.strictEqual(
+			Overrides1.settings.loremipsum,
+			3,
+			'"settings" argument overrides defaults'
+		);
+		assert.strictEqual(
+			Overrides2.settings.loremipsum,
+			4,
+			'"data-'+pluginName+'-settings" attribute overrides settings'
+		);
+		
+	});
+	
+	
+	// API.init() and API.destroy()
+	// --------------------------------------------------
+	QUnit.test( 'API.init() and API.destroy()', function( assert ) {
+		
+		// --- Test init()
+		$('<div id="test1">').appendTo( Fixture );
+		var API = $[pluginName]( '#test1',{ dolorsit:123 });
+		
+		API.init({ loremipsum:'xxx' });
+		assert.notStrictEqual(
+			API.settings.loremipsum,
+			'xxx',
+			'Can\'t call .init() on objects already initialized'
+		);
+		
+		// --- Test destroy()
+		API.destroy();
+		assert.ok(
+			(
+				$('#test1').data( pluginName ) === undefined &&
+				API.element[0] === $('#test1')[0] &&
+				API.settings.dolorsit === 123
+			),
+			'Calling .destroy() detaches API from element, but keeps element and settings in API'
+		);
+		
+		// --- Test init() after destroy()
+		API.init({ loremipsum:'yyy' });
+		assert.strictEqual(
+			API.settings.loremipsum,
+			'yyy',
+			'You can call .init( newSettings ) again after destroy(), and you can override settings by passing an object'
+		);
+		
+		// --- Chain functions
+		API.destroy().destroy().init();
+		assert.ok(
+			true,
+			'Both functions are chainable'
+		);
+	});
+	
+	
+	
+</script>
+</body>
+</html>
