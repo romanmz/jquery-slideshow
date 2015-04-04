@@ -19,6 +19,7 @@
 		autoplay:			false,
 		keyboard:			true,
 		loop:				false,
+		useTouch:			true,
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 		classPlaying:		'playing',
@@ -79,6 +80,7 @@
 			data.timerPlay		= false;
 			data.timerPlayF		= $.noop;
 			data.speed			= settings.speed;
+			data.usingTouch		= ( settings.useTouch && ( 'ontouchstart' in window || navigator.msMaxTouchPoints > 0 ) );
 			
 			// Add public data
 			$.extend( Plugin, {
