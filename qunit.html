@@ -828,6 +828,43 @@
 	});
 	
 	
+	// settings.loop
+	// --------------------------------------------------
+	QUnit.test( 'settings.loop', function( assert ) {
+		
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var API = Slider[ pluginName ]({ loop:true }).data( pluginName );
+		
+		// Test 1
+		var done1 = assert.async();
+		function test1() {
+			API.showPrevious();
+			assert.equal(
+				API.data.current,
+				2,
+				'Looping is enabled when settings.loop == true'
+			);
+			API.destroy().init({ loop:false });
+			done1();
+			setTimeout( test2, API.data.speed + 10 );
+		}
+		setTimeout( test1, API.data.speed + 10 );
+		
+		// Test 2
+		var done2 = assert.async();
+		function test2() {
+			API.showPrevious();
+			assert.equal(
+				API.data.current,
+				0,
+				'Looping is disabled when settings.loop == false'
+			);
+			done2();
+		}
+		
+	});
+	
+	
 	
 </script>
 </body>

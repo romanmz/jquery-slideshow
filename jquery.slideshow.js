@@ -1,5 +1,5 @@
 /*
- * slideshow v0.4
+ * slideshow v0.5
  * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
@@ -16,6 +16,7 @@
 		speed:				500,
 		showFirst:			1,
 		keyboard:			true,
+		loop:				false,
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 	};
@@ -155,9 +156,9 @@
 			newSlide = parseInt( newSlide );
 			var lastSlide = data.total-1;
 			if( newSlide > lastSlide ) {
-				newSlide = lastSlide;
+				newSlide = settings.loop ? 0 : lastSlide;
 			} else if( newSlide < 0 ) {
-				newSlide = 0;
+				newSlide = settings.loop ? lastSlide : 0;
 			}
 			
 			// Check status
