@@ -18,6 +18,7 @@
 		showFirst:			1,
 		autoplay:			false,
 		keyboard:			true,
+		pauseOnFocus:		false,
 		loop:				false,
 		useTouch:			true,
 		classSelected:		'selected',
@@ -112,6 +113,32 @@
 				});
 			}
 			
+			// Pause on hover/focus
+			if( settings.pauseOnFocus ) {
+				
+				// Init vars
+				var wasPlaying = data.isPlaying;
+				var focused = false;
+				var hovered = false;
+				
+				// On mouseenter / focusin
+				element
+				.on( 'mouseenter.'+name+' focusin.'+name, function(e){
+					if( !hovered && !focused )		wasPlaying = data.isPlaying;
+					if( e.type == 'mouseenter' )	hovered = true;
+					else if( e.type == 'focusin' )	focused = true;
+					stop();
+				})
+				
+				// On mouseleave / focusout
+				.on( 'mouseleave.'+name+' focusout.'+name, function(e){
+					if( e.type == 'mouseleave' )	hovered = false;
+					else if( e.type == 'focusout' )	focused = false;
+					if( !hovered && !focused && wasPlaying )
+						play();
+				});
+			}
+			
 			// Trigger event
 			element.trigger( 'slideshowinit' );
 			
@@ -134,6 +161,7 @@
 			
 			// Detach events
 			$(document).off( 'keydown.'+name );
+			element.off( 'mouseenter.'+name+' focusin.'+name+' mouseleave.'+name+' focusout.'+name );
 			
 			// Clear timers
 			clearTimeout( data.timerChange );
