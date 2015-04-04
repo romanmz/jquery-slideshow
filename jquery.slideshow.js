@@ -189,7 +189,7 @@
 		
 		// ShowSlide
 		// ------------------------------
-		var showSlide = function( newSlide, speed ) {
+		var showSlide = function( newSlide, speed, direction ) {
 			
 			// Check arguments
 			newSlide = parseInt( newSlide );
@@ -197,7 +197,6 @@
 			if( typeof speed == 'undefined' ) speed = settings.speed;
 			
 			// Restrict newSlide
-			newSlide = parseInt( newSlide );
 			var lastSlide = data.total-1;
 			if( newSlide > lastSlide ) {
 				newSlide = settings.loop ? 0 : lastSlide;
@@ -211,11 +210,15 @@
 			}
 			
 			// Update data
-			data.isChanging	= true;
 			data.previous	= ( typeof data.current != 'undefined' && data.current != newSlide ) ? data.current : undefined;
 			data.current	= newSlide;
 			data.speed		= speed;
 			clearTimeout( data.timerChange );
+			
+			// Determine direction
+			if( !direction )
+				direction = ( data.current - !!data.previous >= 0 ) ? 1 : -1;
+			data.isChanging	= direction;
 			
 			// Set timer
 			data.timerChangeF = function(){
@@ -265,11 +268,11 @@
 		// Previous, Next, Play, Stop
 		// ------------------------------
 		var showPrevious = function() {
-			showSlide( data.current - 1 );
+			showSlide( data.current - 1, undefined, -1 );
 			return Plugin;
 		};
 		var showNext = function() {
-			showSlide( data.current + 1 );
+			showSlide( data.current + 1, undefined, 1 );
 			return Plugin;
 		};
 		var play = function() {
@@ -280,7 +283,7 @@
 			data.timerPlayF = function(){
 				data.timerPlayF = $.noop;
 				var nextSlide = ( data.current+1 > data.total-1 ) ? 0 : data.current+1;
-				showSlide( nextSlide );
+				showSlide( nextSlide, undefined, 1 );
 			};
 			data.timerPlay = setTimeout( data.timerPlayF, settings.timer );
 			
