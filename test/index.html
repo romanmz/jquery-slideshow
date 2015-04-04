@@ -21,7 +21,7 @@
 				
 				// Others:
 				speed:			500,
-				loop:			true,
+				loop:			false,
 				controlsPrev:	'#slider-controls .prev',
 				controlsNext:	'#slider-controls .next',
 				controlsPlay:	'#slider-controls .play',
@@ -32,25 +32,6 @@
 			// Get data
 			var SliderAPI = Slider.data( 'slideshow' );
 			console.log( SliderAPI );
-			
-			// Change slides on click
-			var SlidesLinks = $('.slide a');
-			SlidesLinks.on( 'click', function(e){
-				SliderAPI.showSlide( SlidesLinks.index( $(this) ) );
-				e.preventDefault();
-			});
-			$('.prev').on( 'click', function(){
-				SliderAPI.showPrevious();
-			});
-			$('.next').on( 'click', function(){
-				SliderAPI.showNext();
-			});
-			$('.play').on( 'click', function(){
-				if( SliderAPI.data.isPlaying )
-					SliderAPI.stop();
-				else
-					SliderAPI.play();
-			});
 			
 			// Animate timer
 			var Timer = $('.timer .progress');
@@ -65,6 +46,8 @@
 				Timer.stop().css({ left:0, width:0 });
 			});
 			
+			$('.play').on( 'click', SliderAPI.destroy );
+			
 		});
 	</script>
 </head>
@@ -77,7 +60,7 @@
 	
 	
 	<!-- CONTROLS -->
-	<div id="slider-controls" class="slider-ctrls-box">
+	<div id="slider-controls" class="slider-ctrls-box clearfix">
 		<p class="slider-status">Showing slide
 			<span class="current">1</span>
 			of

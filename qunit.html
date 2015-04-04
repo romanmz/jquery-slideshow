@@ -997,14 +997,41 @@
 		
 	});
 	
-	// - custom events are triggered
-	// - custom events are triggered in the correct order
-	// - touch devices are detected correctly
-	// pauseOnFocus exists, and when true:
-	// stop() on mouseenter and/or focusin
-	// play() on mouseleave AND focusout AND if slider was playing before mouseenter/focusin
-	// Event handlers are removed on destroy
-	// Check that data.isChanging shows the correct direction (1 or -1)
+	/*
+	- custom events are triggered
+	- custom events are triggered in the correct order
+	- touch devices are detected correctly
+	pauseOnFocus exists, and when true:
+	stop() on mouseenter and/or focusin
+	play() on mouseleave AND focusout AND if slider was playing before mouseenter/focusin
+	Event handlers are removed on destroy
+	Check that data.isChanging shows the correct direction (1 or -1)
+	Check conflict when manually calling play/stop and there\'s keyboard focus on the slider
+	
+	
+	PREV/NEXT
+	settings (must exist and be used):
+		controlsPrev
+		controlsNext
+		textPrev
+		textNext
+		classDisabled
+	private:
+		controls
+		createControls
+		updateControls
+	events:
+		slideshowupdate
+	triggers:
+		prevBtn: showPrevious
+		nextBtn: showNext
+		change: add/remove settings.classDisabled and [tabindex] (only when loop == true )
+	destroy:
+		restore markup of controls.prev
+		restore markup of controls.next
+		remove slideshowupdate.name event from element
+	*/
+	
 	
 	
 	

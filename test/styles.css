@@ -16,6 +16,12 @@ a {
 a:hover {
 	color: #39C;
 }
+:focus {
+	outline: none;
+}
+a:focus {
+	box-shadow: 0 0 8px 0 #007fff;
+}
 .container {
 	overflow: hidden;
 }
@@ -64,7 +70,6 @@ a:hover {
 /* --- Controls --- */
 .slider-ctrls-box {
 	margin: 0 0 15px;
-	overflow: hidden;
 }
 .slider-status {
 	margin: 0 0 10px;
@@ -94,7 +99,8 @@ a:hover {
 	color: #333;
 	background: #DDD;
 }
-.slider-ctrls-box li a:hover {
+.slider-ctrls-box li a:hover,
+.slider-ctrls-box li a:focus {
 	color: white;
 	background: #999;
 }
@@ -149,6 +155,12 @@ a:hover {
 	color: #DDD;
 	background: black;
 	background: rgba(0,0,0,0.8);
+}
+.slide:focus {
+	box-shadow: 0 0 5px red;
+}
+.slide a {
+	display: block;
 }
 
 

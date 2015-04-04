@@ -1,5 +1,5 @@
 /*
- * slideshow v0.5
+ * slideshow v0.6
  * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
@@ -21,10 +21,16 @@
 		pauseOnFocus:		false,
 		loop:				false,
 		useTouch:			true,
+		controlsPrev:		'',
+		controlsNext:		'',
+		textPrev:			'«<span class="visuallyhidden"> Previous slide</span>',
+		textNext:			'<span class="visuallyhidden">Next slide </span>»',
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 		classPlaying:		'playing',
+		classDisabled:		'disabled',
 	};
+	var initialData = name+'-initial-data';
 	
 	
 	// Public Shared Data
@@ -53,6 +59,7 @@
 		// More vars
 		var slides = $();
 		var data = {};
+		var controls = {};
 		
 		
 		// Init
@@ -139,6 +146,9 @@
 				});
 			}
 			
+			// Create controls
+			createControls();
+			
 			// Trigger event
 			element.trigger( 'slideshowinit' );
 			
@@ -159,9 +169,9 @@
 		// ------------------------------
 		var destroy = function() {
 			
-			// Detach events
-			$(document).off( 'keydown.'+name );
-			element.off( 'mouseenter.'+name+' focusin.'+name+' mouseleave.'+name+' focusout.'+name );
+			// Remove event handlers
+			$(document).off( '.'+name );
+			element.off( '.'+name );
 			
 			// Clear timers
 			clearTimeout( data.timerChange );
@@ -171,6 +181,10 @@
 			// Restore objects
 			element.removeClass( settings.classTransition+' '+settings.classPlaying );
 			slides.removeClass( settings.classSelected ).removeAttr( 'aria-live' ).removeAttr( 'aria-hidden' );
+			if( controls.prev )
+				controls.prev.html( controls.prev.data( initialData ) );
+			if( controls.next )
+				controls.next.html( controls.next.data( initialData ) );
 			
 			// Delete properties and methods
 			delete Plugin.slides;
@@ -187,7 +201,7 @@
 		};
 		
 		
-		// ShowSlide
+		// Show Slide
 		// ------------------------------
 		var showSlide = function( newSlide, speed, direction ) {
 			
@@ -243,7 +257,7 @@
 			element.trigger( 'slideshowchangestart' );
 			
 			return Plugin;
-		}
+		};
 		
 		
 		// Update Attributes
@@ -262,7 +276,10 @@
 			otherSlides.removeClass( settings.classSelected ).removeAttr( 'aria-live' ).attr( 'aria-hidden', 'true' );
 			currentSlide.addClass( settings.classSelected ).attr( 'aria-live', 'polite' ).removeAttr( 'aria-hidden' );
 			
-		}
+			// Trigger event
+			element.trigger( 'slideshowupdate' );
+			
+		};
 		
 		
 		// Previous, Next, Play, Stop
@@ -312,7 +329,65 @@
 		};
 		
 		
-		// Init and return
+		// Create Controls
+		// ------------------------------
+		function createControls() {
+			
+			// Button template
+			var btn = $('<a>',{ href:'#', role:'button' });
+			
+			// Create prev/next
+			controls.prev		= $( settings.controlsPrev );
+			controls.prev.data( initialData, controls.prev.html() ).empty();
+			controls.next		= $( settings.controlsNext );
+			controls.next.data( initialData, controls.next.html() ).empty();
+			controls.prevBtn	= btn.clone().html( settings.textPrev ).appendTo( controls.prev );
+			controls.nextBtn	= btn.clone().html( settings.textNext ).appendTo( controls.next );
+			controls.prevBtn.on( 'click.'+name, function(e){
+				showPrevious();
+				e.preventDefault();
+			});
+			controls.nextBtn.on( 'click.'+name, function(e){
+				showNext();
+				e.preventDefault();
+			});
+			
+			// Bind event handler
+			element.on( 'slideshowupdate.'+name, updateControls );
+			
+			// Return
+			return Plugin;
+		};
+		
+		
+		// Update Controls
+		// ------------------------------
+		var updateControls = function() {
+			
+			// Update prev
+			if( settings.loop || data.current > 0 ) {
+				controls.prev.removeClass( settings.classDisabled );
+				controls.prevBtn.removeAttr( 'tabindex' );
+			} else {
+				controls.prev.addClass( settings.classDisabled );
+				controls.prevBtn.attr( 'tabindex', -1 );
+			}
+			
+			// Update next
+			if( settings.loop || data.current < data.total-1 ) {
+				controls.next.removeClass( settings.classDisabled );
+				controls.nextBtn.removeAttr( 'tabindex' );
+			} else {
+				controls.next.addClass( settings.classDisabled );
+				controls.nextBtn.attr( 'tabindex', -1 );
+			}
+			
+			// Return
+			return Plugin;
+		};
+		
+		
+		// Init and Return
 		// ------------------------------
 		return init();
 	}
