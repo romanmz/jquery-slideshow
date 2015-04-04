@@ -14,11 +14,14 @@
 	var defaults = {
 		slides:				'.slide',
 		speed:				500,
+		timer:				8000,
 		showFirst:			1,
+		autoplay:			false,
 		keyboard:			true,
 		loop:				false,
 		classSelected:		'selected',
 		classTransition:	'transitioning',
+		classPlaying:		'playing',
 	};
 	
 	
@@ -72,6 +75,9 @@
 			data.isChanging		= false;
 			data.timerChange	= false;
 			data.timerChangeF	= $.noop;
+			data.isPlaying		= settings.autoplay;
+			data.timerPlay		= false;
+			data.timerPlayF		= $.noop;
 			data.speed			= settings.speed;
 			
 			// Add public data
@@ -86,6 +92,8 @@
 				showSlide: showSlide,
 				showPrevious: showPrevious,
 				showNext: showNext,
+				play: play,
+				stop: stop,
 			} );
 			
 			// Continue only if there's 2 slides or more
@@ -125,9 +133,10 @@
 			// Clear timers
 			clearTimeout( data.timerChange );
 			data.timerChangeF();
+			clearTimeout( data.timerPlay );
 			
 			// Restore objects
-			element.removeClass( settings.classTransition );
+			element.removeClass( settings.classTransition+' '+settings.classPlaying );
 			slides.removeClass( settings.classSelected ).removeAttr( 'aria-live' ).removeAttr( 'aria-hidden' );
 			
 			// Delete properties and methods
@@ -136,6 +145,8 @@
 			delete Plugin.showSlide;
 			delete Plugin.showPrevious;
 			delete Plugin.showNext;
+			delete Plugin.play;
+			delete Plugin.stop;
 			
 			// Remove instance and return
 			element.removeData( name );
@@ -173,22 +184,17 @@
 			data.speed		= speed;
 			clearTimeout( data.timerChange );
 			
-			// Select slides
-			var currentSlide = slides.eq( data.current );
-			var otherSlides = slides.not( currentSlide );
-			
-			// Update classes
-			otherSlides.removeClass( settings.classSelected );
-			currentSlide.addClass( settings.classSelected );
-			otherSlides.removeAttr( 'aria-live' ).attr( 'aria-hidden', 'true' );
-			currentSlide.attr( 'aria-live', 'polite' ).removeAttr( 'aria-hidden' );
-			element.addClass( settings.classTransition );
+			// Update attributes
+			updateAttributes();
 			
 			// Trigger events
 			data.timerChangeF = function(){
 				data.isChanging = false;
 				data.timerChangeF = $.noop;
-				element.removeClass( settings.classTransition );
+				updateAttributes();
+				if( data.isPlaying ) {
+					play();
+				}
 			};
 			data.timerChange = setTimeout( data.timerChangeF, data.speed );
 			
@@ -196,7 +202,26 @@
 		}
 		
 		
-		// Previous, Next
+		// Update Attributes
+		// ------------------------------
+		var updateAttributes = function(){
+			
+			// Select objects
+			var currentSlide = slides.eq( data.current );
+			var otherSlides = slides.not( currentSlide );
+			
+			// Update element
+			element[ data.isChanging ? 'addClass' : 'removeClass' ]( settings.classTransition );
+			element[ data.isPlaying ? 'addClass' : 'removeClass' ]( settings.classPlaying );
+			
+			// Update slides
+			otherSlides.removeClass( settings.classSelected ).removeAttr( 'aria-live' ).attr( 'aria-hidden', 'true' );
+			currentSlide.addClass( settings.classSelected ).attr( 'aria-live', 'polite' ).removeAttr( 'aria-hidden' );
+			
+		}
+		
+		
+		// Previous, Next, Play, Stop
 		// ------------------------------
 		var showPrevious = function() {
 			showSlide( data.current - 1 );
@@ -205,6 +230,35 @@
 		var showNext = function() {
 			showSlide( data.current + 1 );
 			return Plugin;
+		};
+		var play = function() {
+			
+			// Update data
+			data.isPlaying = true;
+			clearTimeout( data.timerPlay );
+			data.timerPlayF = function(){
+				data.timerPlayF = $.noop;
+				var nextSlide = ( data.current+1 > data.total-1 ) ? 0 : data.current+1;
+				showSlide( nextSlide );
+			};
+			updateAttributes();
+			
+			// Set timer and return
+			data.timerPlay = setTimeout( data.timerPlayF, settings.timer );
+			return Plugin;
+			
+		};
+		var stop = function() {
+			
+			// Update data
+			data.isPlaying = false;
+			clearTimeout( data.timerPlay );
+			data.timerPlayF = $.noop;
+			updateAttributes();
+			
+			// Return
+			return Plugin;
+			
 		};
 		
 		

@@ -828,6 +828,15 @@
 	});
 	
 	
+	
+	
+	
+	// SLIDESHOWS EXTRAS
+	// ==================================================
+	
+	QUnit.module( "Slideshow Extras" );
+	
+	
 	// settings.loop
 	// --------------------------------------------------
 	QUnit.test( 'settings.loop', function( assert ) {
@@ -863,6 +872,132 @@
 		}
 		
 	});
+	
+	
+	// play() and stop()
+	// --------------------------------------------------
+	QUnit.test( 'play() and stop()', function( assert ) {
+		
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var API = Slider[ pluginName ]({ autoplay:false, timer:1000 }).data( pluginName );
+		
+		assert.ok(
+			(
+				API.data.hasOwnProperty( 'isPlaying' ) &&
+				API.data.hasOwnProperty( 'timerPlay' ) &&
+				API.data.hasOwnProperty( 'timerPlayF' )
+			),
+			'API.data has "isPlaying", "timerPlay" and "timerPlayF"'
+		);
+		assert.ok(
+			(
+				API.settings.hasOwnProperty( 'timer' ) &&
+				API.settings.hasOwnProperty( 'autoplay' ) &&
+				API.settings.hasOwnProperty( 'classPlaying' )
+			),
+			'API.settings has "timer", "autoplay" and "classPlaying"'
+		);
+		
+		// Test 1
+		var done1 = assert.async();
+		var isPlaying1 = API.data.isPlaying, isPlaying2;
+		var current1, current2, current3;
+		function test1() {
+			current1 = API.data.current;
+			API.play();
+			isPlaying2 = API.data.isPlaying;
+			assert.ok(
+				(
+					isPlaying1 === false,
+					isPlaying2 === true
+				),
+				'play() changes data immediatly'
+			);
+			done1();
+			setTimeout( test2, API.settings.timer - 10 );
+			setTimeout( test3, API.settings.timer + 10 );
+		}
+		setTimeout( test1, API.data.speed + 10 );
+		
+		// Test 2
+		var done2 = assert.async();
+		function test2() {
+			current2 = API.data.current;
+		}
+		function test3() {
+			current3 = API.data.current;
+			assert.ok(
+				(
+					current1 === current2 &&
+					current3 - current2 == 1
+				),
+				'play() changes slide after time set in settings.timer'
+			);
+			done2();
+			test4();
+		}
+		
+		// Test 3
+		var done4 = assert.async();
+		function test4() {
+			var isPlaying1 = API.data.isPlaying;
+			API.stop();
+			var isPlaying2 = API.data.isPlaying;
+			assert.ok(
+				(
+					isPlaying1 != isPlaying2 &&
+					API.data.timerPlayF === $.noop
+				),
+				'cancel() updates data and cancels timerPlay'
+			);
+			done4();
+			test5();
+		}
+		
+		// Test 4
+		var done5 = assert.async();
+		function test5() {
+			API.destroy().init({ autoplay:false });
+			var autoplay1 = API.settings.autoplay;
+			var classname1 = Slider.hasClass( API.settings.classPlaying );
+			API.destroy().init({ autoplay:true });
+			var autoplay2 = API.settings.autoplay;
+			var classname2 = Slider.hasClass( API.settings.classPlaying );
+			assert.ok(
+				(
+					autoplay1 === false &&
+					autoplay2 === true
+				),
+				'settings.autoplay works'
+			);
+			assert.ok(
+				(
+					classname1 === false &&
+					classname2 === true
+				),
+				'settings.classPlaying works'
+			);
+			
+			API.destroy();
+			assert.ok(
+				(
+					!API.hasOwnProperty( 'play' ) &&
+					!API.hasOwnProperty( 'stop' )
+				),
+				'destroy() removes play and stop'
+			);
+			assert.ok(
+				(
+					!Slider.hasClass( API.settings.classPlaying )
+				),
+				'destroy() removes classPlaying from element'
+			);
+			done5();
+		}
+		
+	});
+	
+	
 	
 	
 	
