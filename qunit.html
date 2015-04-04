@@ -307,7 +307,6 @@
 		// --- Test init()
 		$('<div id="test1">').appendTo( Fixture );
 		var API = $[pluginName]( '#test1',{ dolorsit:123 });
-		
 		API.init({ loremipsum:'xxx' });
 		assert.notStrictEqual(
 			API.settings.loremipsum,
@@ -645,6 +644,91 @@
 		}
 		
 		console.warn( 'PENDING!!!: API.showSlide(): test showFirst == \'random\'' );
+	});
+	
+	
+	// API.showSlide().destroy()
+	// --------------------------------------------------
+	QUnit.test( 'API.showSlide().destroy()', function( assert ) {
+		
+		// Create objects
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var Slides = Slider.find( '.slide' );
+		var Slide1 = Slides.eq(0);
+		var Slide2 = Slides.eq(1);
+		var Slide3 = Slides.eq(2);
+		
+		// Function
+		function conv( variable ) {
+			if( variable === '' )
+				return undefined;
+		}
+		
+		// Get initial state
+		var elementClass1 = conv( Slider.attr( 'class' ) );
+		var slide1Class1 = conv( Slide1.attr( 'class' ) );
+		var slide2Class1 = conv( Slide2.attr( 'class' ) );
+		var slide3Class1 = conv( Slide3.attr( 'class' ) );
+		var slide1Live1 = conv( Slide1.attr( 'aria-live' ) );
+		var slide2Live1 = conv( Slide2.attr( 'aria-live' ) );
+		var slide3Live1 = conv( Slide3.attr( 'aria-live' ) );
+		var slide1Hidden1 = conv( Slide1.attr( 'aria-hidden' ) );
+		var slide2Hidden1 = conv( Slide2.attr( 'aria-hidden' ) );
+		var slide3Hidden1 = conv( Slide3.attr( 'aria-hidden' ) );
+		
+		// Run plugin
+		var API = Slider[ pluginName ]().data( pluginName );
+		API.destroy();
+		
+		// Get final state
+		var elementClass2 = conv( Slider.attr( 'class' ) );
+		var slide1Class2 = conv( Slide1.attr( 'class' ) );
+		var slide2Class2 = conv( Slide2.attr( 'class' ) );
+		var slide3Class2 = conv( Slide3.attr( 'class' ) );
+		var slide1Live2 = conv( Slide1.attr( 'aria-live' ) );
+		var slide2Live2 = conv( Slide2.attr( 'aria-live' ) );
+		var slide3Live2 = conv( Slide3.attr( 'aria-live' ) );
+		var slide1Hidden2 = conv( Slide1.attr( 'aria-hidden' ) );
+		var slide2Hidden2 = conv( Slide2.attr( 'aria-hidden' ) );
+		var slide3Hidden2 = conv( Slide3.attr( 'aria-hidden' ) );
+		
+		// Test
+		assert.ok(
+			elementClass1 === elementClass2,
+			'"class" of element is restored'
+		);
+		assert.ok(
+			(
+				slide1Class1 === slide1Class2 &&
+				slide2Class1 === slide2Class2 &&
+				slide3Class1 === slide3Class2
+			),
+			'"class" of slides is restored'
+		);
+		assert.ok(
+			(
+				slide1Live1 === slide1Live2 &&
+				slide2Live1 === slide2Live2 &&
+				slide3Live1 === slide3Live2
+			),
+			'"aria-live" attribute of slides is restored'
+		);
+		assert.ok(
+			(
+				slide1Hidden1 === slide1Hidden2 &&
+				slide2Hidden1 === slide2Hidden2 &&
+				slide3Hidden1 === slide3Hidden2
+			),
+			'"aria-hidden" attribute of slides is restored'
+		);
+		assert.strictEqual(
+			API.showSlide,
+			undefined,
+			'API.showSlide() must be removed on .destroy()'
+		);
+		
+		console.warn( 'PENDING!!!: slideshow().destroy(): Early execution of timerChangeF' );
+		
 	});
 	
 	

@@ -61,10 +61,7 @@
 			$.extend( settings, newSettings );
 			
 			// Get slides
-			Plugin.slides = slides = element.find( settings.slides );
-			if( slides.length < 2 ) {
-				return Plugin;
-			}
+			slides = element.find( settings.slides );
 			
 			// Init data
 			data.total			= slides.length;
@@ -72,7 +69,25 @@
 			data.previous		= undefined;
 			data.isChanging		= false;
 			data.timerChange	= false;
+			data.timerChangeF	= $.noop;
 			data.speed			= settings.speed;
+			
+			// Add public data
+			$.extend( Plugin, {
+				element: element,
+				slides: slides,
+				settings: settings,
+				data: data,
+
+				init: init,
+				destroy: destroy,
+				showSlide: showSlide,
+			} );
+			
+			// Continue only if there's 2 slides or more
+			if( data.total < 2 ) {
+				return Plugin;
+			}
 			
 			// Show first slide
 			if( settings.showFirst == 'random' ) {
@@ -90,9 +105,19 @@
 		// Destroy
 		// ------------------------------
 		var destroy = function() {
-			// Revert everything except element and settings
+			
+			// Clear timers
+			clearTimeout( data.timerChange );
+			data.timerChangeF();
+			
+			// Restore objects
+			element.removeClass( settings.classTransition );
+			slides.removeClass( settings.classSelected ).removeAttr( 'aria-live' ).removeAttr( 'aria-hidden' );
+			
+			// Delete properties and methods
 			delete Plugin.slides;
 			delete Plugin.data;
+			delete Plugin.showSlide;
 			
 			// Remove instance and return
 			element.removeData( name );
@@ -142,27 +167,19 @@
 			element.addClass( settings.classTransition );
 			
 			// Trigger events
-			data.timerChange = setTimeout(function(){
+			data.timerChangeF = function(){
 				data.isChanging = false;
+				data.timerChangeF = $.noop;
 				element.removeClass( settings.classTransition );
-			}, data.speed );
+			};
+			data.timerChange = setTimeout( data.timerChangeF, data.speed );
 			
 			return Plugin;
 		}
 		
 		
-		// Return Public Data
+		// Init and return
 		// ------------------------------
-		$.extend( Plugin, {
-			element: element,
-			slides: slides,
-			settings: settings,
-			data: data,
-			
-			init: init,
-			destroy: destroy,
-			showSlide: showSlide,
-		} );
 		return init();
 	}
 	
