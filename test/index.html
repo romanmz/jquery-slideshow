@@ -20,7 +20,7 @@
 				pauseOnFocus:	true,	// must be true
 				
 				// Others:
-				speed:			1500,
+				speed:			500,
 				loop:			true,
 				controlsPrev:	'#slider-controls .prev',
 				controlsNext:	'#slider-controls .next',
@@ -50,6 +50,19 @@
 					SliderAPI.stop();
 				else
 					SliderAPI.play();
+			});
+			
+			// Animate timer
+			var Timer = $('.timer .progress');
+			Slider
+			.on( 'slideshowplay', function(){
+				Timer.stop().css({ left:0, width:0 }).animate({ width:'100%' },{ duration:SliderAPI.settings.timer });
+			})
+			.on( 'slideshowchangestart', function(){
+				Timer.stop().animate({ left:'100%', width:0 },{ duration:SliderAPI.data.speed });
+			})
+			.on( 'slideshowstop', function(){
+				Timer.stop().css({ left:0, width:0 });
 			});
 			
 		});

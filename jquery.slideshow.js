@@ -110,6 +110,9 @@
 				});
 			}
 			
+			// Trigger event
+			element.trigger( 'slideshowinit' );
+			
 			// Show first slide
 			if( settings.showFirst == 'random' ) {
 				var firstSlide = Math.floor( Math.random() * data.total );
@@ -184,19 +187,27 @@
 			data.speed		= speed;
 			clearTimeout( data.timerChange );
 			
-			// Update attributes
-			updateAttributes();
-			
-			// Trigger events
+			// Set timer
 			data.timerChangeF = function(){
+				
+				// Update data
 				data.isChanging = false;
 				data.timerChangeF = $.noop;
+				
+				// Trigger event
 				updateAttributes();
+				element.trigger( 'slideshowchangeend' );
+				
+				// Continue autoplay
 				if( data.isPlaying ) {
 					play();
 				}
 			};
 			data.timerChange = setTimeout( data.timerChangeF, data.speed );
+			
+			// Trigger event
+			updateAttributes();
+			element.trigger( 'slideshowchangestart' );
 			
 			return Plugin;
 		}
@@ -241,10 +252,13 @@
 				var nextSlide = ( data.current+1 > data.total-1 ) ? 0 : data.current+1;
 				showSlide( nextSlide );
 			};
-			updateAttributes();
-			
-			// Set timer and return
 			data.timerPlay = setTimeout( data.timerPlayF, settings.timer );
+			
+			// Trigger event
+			updateAttributes();
+			element.trigger( 'slideshowplay' );
+			
+			// Return
 			return Plugin;
 			
 		};
@@ -254,7 +268,10 @@
 			data.isPlaying = false;
 			clearTimeout( data.timerPlay );
 			data.timerPlayF = $.noop;
+			
+			// Trigger event
 			updateAttributes();
+			element.trigger( 'slideshowstop' );
 			
 			// Return
 			return Plugin;
