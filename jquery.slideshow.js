@@ -23,8 +23,11 @@
 		useTouch:			true,
 		controlsPrev:		'',
 		controlsNext:		'',
+		controlsPlay:		'',
 		textPrev:			'«<span class="visuallyhidden"> Previous slide</span>',
 		textNext:			'<span class="visuallyhidden">Next slide </span>»',
+		textPlay:			'<span class="visuallyhidden">Play Animation </span>▶',
+		textStop:			'<span class="visuallyhidden">Stop Animation </span>￭',
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 		classPlaying:		'playing',
@@ -185,6 +188,8 @@
 				controls.prev.html( controls.prev.data( initialData ) );
 			if( controls.next )
 				controls.next.html( controls.next.data( initialData ) );
+			if( controls.play )
+				controls.play.html( controls.play.data( initialData ) );
 			
 			// Delete properties and methods
 			delete Plugin.slides;
@@ -352,6 +357,18 @@
 				e.preventDefault();
 			});
 			
+			// Create play/stop
+			controls.play		= $( settings.controlsPlay );
+			controls.play.data( initialData, controls.play.html() ).empty();
+			controls.playBtn	= btn.clone().html( settings.textPlay ).appendTo( controls.play );
+			controls.playBtn.on( 'click.'+name, function(e){
+				if( data.isPlaying )
+					stop();
+				else
+					play();
+				e.preventDefault();
+			});
+			
 			// Bind event handler
 			element.on( 'slideshowupdate.'+name, updateControls );
 			
@@ -380,6 +397,13 @@
 			} else {
 				controls.next.addClass( settings.classDisabled );
 				controls.nextBtn.attr( 'tabindex', -1 );
+			}
+			
+			// Update play/stop
+			if( data.isPlaying ) {
+				controls.playBtn.html( settings.textStop );
+			} else {
+				controls.playBtn.html( settings.textPlay );
 			}
 			
 			// Return
