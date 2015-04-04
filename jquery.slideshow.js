@@ -15,6 +15,7 @@
 		slides:				'.slide',
 		speed:				500,
 		showFirst:			1,
+		keyboard:			true,
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 	};
@@ -82,11 +83,22 @@
 				init: init,
 				destroy: destroy,
 				showSlide: showSlide,
+				showPrevious: showPrevious,
+				showNext: showNext,
 			} );
 			
 			// Continue only if there's 2 slides or more
 			if( data.total < 2 ) {
 				return Plugin;
+			}
+			
+			// Add keyboard events
+			if( settings.keyboard ) {
+				$(document).on( 'keydown.'+name, function(e){
+					var key = e.keyCode || e.which;
+					if( key==37 )		showPrevious();
+					else if( key==39 )	showNext();
+				});
 			}
 			
 			// Show first slide
@@ -106,6 +118,9 @@
 		// ------------------------------
 		var destroy = function() {
 			
+			// Detach events
+			$(document).off( 'keydown.'+name );
+			
 			// Clear timers
 			clearTimeout( data.timerChange );
 			data.timerChangeF();
@@ -118,6 +133,8 @@
 			delete Plugin.slides;
 			delete Plugin.data;
 			delete Plugin.showSlide;
+			delete Plugin.showPrevious;
+			delete Plugin.showNext;
 			
 			// Remove instance and return
 			element.removeData( name );
@@ -176,6 +193,18 @@
 			
 			return Plugin;
 		}
+		
+		
+		// Previous, Next
+		// ------------------------------
+		var showPrevious = function() {
+			showSlide( data.current - 1 );
+			return Plugin;
+		};
+		var showNext = function() {
+			showSlide( data.current + 1 );
+			return Plugin;
+		};
 		
 		
 		// Init and return

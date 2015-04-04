@@ -732,6 +732,100 @@
 	});
 	
 	
+	// API.showPrevious() and API.showNext()
+	// --------------------------------------------------
+	QUnit.test( 'API.showPrevious() and API.showNext()', function( assert ) {
+		
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var API = Slider[ pluginName ]({ keyboard:false }).data( pluginName );
+		
+		// Test showNext
+		var current1 = API.data.current;
+		var done1 = assert.async();
+		function test1() {
+			API.showNext().showSlide( 0 ).showNext();
+			var current2 = API.data.current;
+			assert.ok(
+				( current1 == 0 && current2 == 1 ),
+				'showNext is working and is chainable (showSlide is also chainable)'
+			);
+			done1();
+			setTimeout( test2, API.data.speed + 10 );
+		}
+		setTimeout( test1, API.data.speed + 10 );
+		
+		// Test showPrevious
+		var done2 = assert.async();
+		function test2() {
+			API.showPrevious().showNext().showPrevious();
+			var current3 = API.data.current;
+			assert.strictEqual(
+				current3,
+				0,
+				'showPrevious is working and is chainable'
+			);
+			done2();
+			setTimeout( test3, API.data.speed + 10 );
+		}
+		
+		// Test with keyboard = false
+		var done3 = assert.async();
+		function test3() {
+			$(document).trigger( $.Event( 'keydown', { keyCode: 39 } ) );
+			assert.notStrictEqual(
+				API.data.current,
+				1,
+				'keyboard events don\'t work if setting.keyboard == false'
+			);
+			API.destroy().init({ keyboard:true });
+			done3();
+			setTimeout( test4, API.data.speed + 10 );
+		}
+		
+		// Test right arrow
+		var done4 = assert.async();
+		function test4() {
+			$(document).trigger( $.Event( 'keydown', { keyCode: 39 } ) );
+			assert.strictEqual(
+				API.data.current,
+				1,
+				'right arrow works if setting.keyboard == true'
+			);
+			done4();
+			setTimeout( test5, API.data.speed + 10 );
+		}
+		
+		// Test left arrow
+		var done5 = assert.async();
+		function test5() {
+			$(document).trigger( $.Event( 'keydown', { keyCode: 37 } ) );
+			assert.strictEqual(
+				API.data.current,
+				0,
+				'left arrow works if setting.keyboard == true'
+			);
+			done5();
+			setTimeout( test6, API.data.speed + 10 );
+		}
+		
+		// Remove event handler on destroy
+		var done6 = assert.async();
+		function test6() {
+			var handlers1 = typeof $._data( document, "events" ).keydown;
+			API.destroy();
+			var handlers2 = typeof $._data( document, "events" );
+			
+			assert.ok(
+				handlers1 == 'object' && handlers2 == 'undefined',
+				'keyboard event handlers removed on destroy()'
+			)
+			assert.ok(
+				typeof API.showNext == 'undefined' && typeof API.showPrevious == 'undefined',
+				'showNext and showPrevious removed on destroy()'
+			);
+			done6();
+		}
+	});
 	
 	
 	

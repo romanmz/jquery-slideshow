@@ -38,6 +38,12 @@
 				SliderAPI.showSlide( SlidesLinks.index( $(this) ) );
 				e.preventDefault();
 			});
+			$('.prev').on( 'click', function(){
+				SliderAPI.showPrevious();
+			});
+			$('.next').on( 'click', function(){
+				SliderAPI.showNext();
+			});
 			
 		});
 	</script>
@@ -58,9 +64,9 @@
 			<span class="total">3</span>
 		</p>
 		<ul class="slider-ctrls">
-			<li class="prev"></li>
+			<li class="prev">Previous</li>
 			<li class="play"></li>
-			<li class="next"></li>
+			<li class="next">Next</li>
 		</ul>
 		<ul class="slider-nav">
 			<li class="item"></li>
