@@ -1001,9 +1001,7 @@
 	- custom events are triggered
 	- custom events are triggered in the correct order
 	- touch devices are detected correctly
-	pauseOnFocus exists, and when true:
-	stop() on mouseenter and/or focusin
-	play() on mouseleave AND focusout AND if slider was playing before mouseenter/focusin
+	pauseOnFocus exists, and when true: stop() on focusin
 	Event handlers are removed on destroy
 	Check that data.isChanging shows the correct direction (1 or -1)
 	
@@ -1064,9 +1062,7 @@
 		restore classnames of initial items
 		remove auto generated items
 		or restore exceeding items
-		
 	
-	Check conflict with play/stop button, manual hover/focus on slider, and auto-focus after clicking on nav items
 	*/
 	
 	

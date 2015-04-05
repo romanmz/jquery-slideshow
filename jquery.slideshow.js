@@ -18,6 +18,7 @@
 		showFirst:			1,
 		autoplay:			false,
 		keyboard:			true,
+		pauseOnFocus:		true,
 		loop:				false,
 		useTouch:			true,
 		controlsPrev:		'',
@@ -123,6 +124,14 @@
 					var key = e.keyCode || e.which;
 					if( key==37 )		showPrevious();
 					else if( key==39 )	showNext();
+				});
+			}
+			
+			// Pause on hover/focus
+			if( settings.pauseOnFocus ) {
+				element.on( 'focusin.'+name, function(e){
+					if( data.isPlaying )
+						stop();
 				});
 			}
 			
