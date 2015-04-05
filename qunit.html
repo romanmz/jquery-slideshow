@@ -997,14 +997,170 @@
 		
 	});
 	
-	/*
-	- custom events are triggered
-	- custom events are triggered in the correct order
-	- touch devices are detected correctly
-	pauseOnFocus exists, and when true: stop() on focusin
-	Event handlers are removed on destroy
-	Check that data.isChanging shows the correct direction (1 or -1)
 	
+	// events
+	// --------------------------------------------------
+	QUnit.test( 'trigger events', function( assert ) {
+		
+		// Setup
+		var Slider = $('<div>').appendTo( Fixture ).append( '<div class="slide"></div><div class="slide"></div><div class="slide"></div>' );
+		var testCounter = 0;
+		var eventCounter = 0;
+		
+		// Init
+		function testEvent( name, testname, callback ) {
+			var counter = ++testCounter;
+			var done = assert.async();
+			Slider.on( name+'.'+testname, function(){
+				assert.equal(
+					counter,
+					++eventCounter,
+					testname+': '+eventCounter+'. '+name
+				);
+				Slider.off( name+'.'+testname );
+				done();
+				if( typeof callback == 'function' )
+					callback();
+			});
+		}
+		testEvent( 'slideshowinit', 'init' );
+		testEvent( 'slideshowupdate', 'init' );
+		testEvent( 'slideshowchangestart', 'init' );
+		testEvent( 'slideshowchangeend', 'init' );
+		testEvent( 'slideshowplay', 'init', test2 );
+		var API = Slider[ pluginName ]({ autoplay:true }).data( pluginName );
+		
+		// showSlide
+		function test2() {
+			testCounter = 0;
+			eventCounter = 0;
+			testEvent( 'slideshowupdate', 'showSlide' );
+			testEvent( 'slideshowchangestart', 'showSlide' );
+			testEvent( 'slideshowchangeend', 'showSlide' );
+			testEvent( 'slideshowplay', 'showSlide', test3 );
+			API.showSlide( 1, 0 );
+		}
+		
+		// stop
+		function test3() {
+			testCounter = 0;
+			eventCounter = 0;
+			testEvent( 'slideshowupdate', 'stop' );
+			testEvent( 'slideshowstop', 'stop', test4 );
+			API.stop();
+		}
+		
+		// stop
+		function test4() {
+			testCounter = 0;
+			eventCounter = 0;
+			testEvent( 'slideshowupdate', 'play' );
+			testEvent( 'slideshowplay', 'play' );
+			API.play();
+		}
+		
+	});
+	
+	
+	// settings.pauseOnFocus
+	// --------------------------------------------------
+	QUnit.test( 'settings.pauseOnFocus', function( assert ) {
+		
+		// Setup
+		var Slider = $('<div>').appendTo( Fixture );
+		var Slides = $('<div class="slide"></div><div class="slide"></div><div class="slide"></div>').appendTo( Slider );
+		Slides.attr( 'tabindex', -1 );
+		var API = Slider[ pluginName ]({ autoplay:true, pauseOnFocus:false }).data( pluginName );
+		
+		// Check
+		assert.ok(
+			API.settings.hasOwnProperty( 'pauseOnFocus' ),
+			'settings.pauseOnFocus exists'
+		);
+		
+		// set to false
+		var isPlaying1 = API.data.isPlaying;
+		Slides.first().trigger( 'focus' );
+		var isPlaying2 = API.data.isPlaying;
+		assert.ok(
+			(
+				isPlaying1 === true &&
+				isPlaying2 === true
+			),
+			'no effect if set to false'
+		);
+		
+		// set to false
+		API.destroy().init({ pauseOnFocus:true });
+		isPlaying1 = API.data.isPlaying;
+		Slides.first().trigger( 'focus' );
+		isPlaying2 = API.data.isPlaying;
+		assert.ok(
+			(
+				isPlaying1 === true &&
+				isPlaying2 === false
+			),
+			'if set to true, pauses slider when an element inside gains focus'
+		);
+		
+	});
+	
+	
+	// data.isChanging
+	// --------------------------------------------------
+	QUnit.test( 'data.isChanging', function( assert ) {
+		
+		// Setup
+		var Slider = $('<div>').appendTo( Fixture );
+		var Slides = $('<div class="slide"></div><div class="slide"></div><div class="slide"></div>').appendTo( Slider );
+		var API = Slider[ pluginName ]({ autoplay:false, loop:true }).data( pluginName );
+		
+		// Test 1
+		assert.ok(
+			API.data.isChanging === 1,
+			'value while showing a slide for the first time must be 1'
+		);
+		
+		// Test 2
+		API.data.timerChangeF();
+		assert.ok(
+			API.data.isChanging === false,
+			'must be false when not changing'
+		);
+		
+		// Test 2
+		API.showSlide( 2 );
+		assert.ok(
+			API.data.isChanging === 1,
+			'must be 1 when skipping forward'
+		);
+		
+		// Test 3
+		API.data.timerChangeF();
+		API.showSlide( 0 );
+		assert.ok(
+			API.data.isChanging === -1,
+			'must be -1 when skipping backwards'
+		);
+		
+		// Test 4
+		API.data.timerChangeF();
+		API.showPrevious();
+		assert.ok(
+			API.data.isChanging === -1 && API.data.current == 2,
+			'must always be -1 when using showPrevious (even if looping is true)'
+		);
+		
+		// Test 5
+		API.data.timerChangeF();
+		API.showNext();
+		assert.ok(
+			API.data.isChanging === 1 && API.data.current == 0,
+			'must always be 1 when using showNext (even if looping is true)'
+		);
+		
+	});
+	/*
 	
 	PREV/NEXT
 	settings (must exist and be used):
