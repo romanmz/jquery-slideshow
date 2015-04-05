@@ -345,10 +345,10 @@
 	
 	
 	
-	// SLIDESHOWS BASICS
+	// BASICS
 	// ==================================================
 	
-	QUnit.module( "Slideshow Basics" );
+	QUnit.module( "Basics" );
 	
 	
 	// API.slides
@@ -831,10 +831,10 @@
 	
 	
 	
-	// SLIDESHOWS EXTRAS
+	// EXTRAS
 	// ==================================================
 	
-	QUnit.module( "Slideshow Extras" );
+	QUnit.module( "Extras" );
 	
 	
 	// settings.loop
@@ -1160,68 +1160,414 @@
 		);
 		
 	});
-	/*
-	
-	PREV/NEXT
-	settings (must exist and be used):
-		controlsPrev
-		controlsNext
-		textPrev
-		textNext
-		classDisabled
-	private:
-		controls
-		createControls
-		updateControls
-	events:
-		slideshowupdate
-	triggers:
-		prevBtn: showPrevious
-		nextBtn: showNext
-		change: add/remove settings.classDisabled and [tabindex] (only when loop == true )
-	destroy:
-		restore markup of controls.prev
-		restore markup of controls.next
-		remove slideshowupdate.name event from element
-	
-	PLAY/PAUSE
-	settings:
-		controlsPlay
-		textPlay
-		textStop
-	triggers:
-		playBtn: toggle play()/stop()
-		change: change text
-	destroy
-		restore markup of controls.play
 	
 	
-	ITEMS
-	settings:
-		controlsItems
-		textItem
-		textCurrentItem
-	private:
-		slideTitleAttr
-	markup:
-		Use existing selected items
-		Create missing ones based on last one
-		or remove exceeding ones
-		use slideTitleAttr for custom titles
-		controls.items must always match markup
-		controls.itemsBtns must match controls.items
-	trigger:
-		items: show matching slide
-		change: if corresponds to selected slide, change classSelected on <li> and text on <a>
-	destroy:
-		restore markup of initial items
-		restore classnames of initial items
-		remove auto generated items
-		or restore exceeding items
-	
-	*/
 	
 	
+	
+	// CONTROLS
+	// ==================================================
+	
+	QUnit.module( "Controls" );
+	
+	
+	// Prev/Next
+	// --------------------------------------------------
+	QUnit.test( 'Prev/Next', function( assert ) {
+		
+		// Setup
+		var Slider = $('<div>').appendTo( Fixture );
+		var Slides = $('<div class="slide"></div><div class="slide"></div><div class="slide"></div>').appendTo( Slider );
+		
+		// Create Controls
+		var prevText1 = 'previous';
+		var nextText1 = 'next';
+		var prevText2 = '111';
+		var nextText2 = '222';
+		var classname = 'disabledtag';
+		var Prev = $('<div class="prev">').text( prevText1 ).appendTo( Slider );
+		var Next = $('<div class="next">').text( nextText1 ).appendTo( Slider );
+		
+		// Init
+		var API = Slider[ pluginName ]({
+			controlsPrev: '.prev',
+			controlsNext: '.next',
+			textPrev: prevText2,
+			textNext: nextText2,
+			classDisabled: classname,
+			loop: true,
+			showFirst: 1,
+		}).data( pluginName );
+		
+		// Select buttons
+		var PrevBtn = Prev.children('a[role=button][href]');
+		var NextBtn = Next.children('a[role=button][href]');
+		
+		// API.settings
+		assert.ok(
+			(
+				API.settings.hasOwnProperty( 'controlsPrev' ) &&
+				API.settings.hasOwnProperty( 'controlsNext' ) &&
+				API.settings.hasOwnProperty( 'textPrev' ) &&
+				API.settings.hasOwnProperty( 'textNext' ) &&
+				API.settings.hasOwnProperty( 'classDisabled' )
+			),
+			'API.settings has controlsPrev, controlsNext, textPrev, textNext and classDisabled'
+		);
+		
+		// Private vars
+		assert.ok(
+			(
+				!API.settings.hasOwnProperty( 'controls' ) &&
+				!API.settings.hasOwnProperty( 'createControls' ) &&
+				!API.settings.hasOwnProperty( 'updateControls' )
+			),
+			'API.controls, API.createControls and API.updateControls should be private'
+		);
+		
+		// Selector test
+		assert.ok(
+			(
+				PrevBtn.length &&
+				NextBtn.length
+			),
+			'Selectors are working, and they create a child <a> tag with role and href attributes'
+		);
+		
+		// Text test
+		assert.ok(
+			(
+				PrevBtn.html() === prevText2 &&
+				NextBtn.html() === nextText2
+			),
+			'Text settings are working'
+		);
+		
+		// Disabled status not working if loop == true
+		assert.ok(
+			(
+				!Prev.hasClass( classname ) &&
+				!PrevBtn.is( '[tabindex]' )
+			),
+			'Prev button doesn\'t get disabled if loop == true'
+		);
+		
+		API.data.timerChangeF();
+		API.showSlide( 2, 0 );
+		assert.ok(
+			(
+				!Next.hasClass( classname ) &&
+				!NextBtn.is( '[tabindex]' )
+			),
+			'Next button doesn\'t get disabled if loop == true'
+		);
+		
+		// Disabled status works if loop == false
+		API.destroy().init({ loop:false });
+		PrevBtn = Prev.children('a');
+		NextBtn = Next.children('a');
+		assert.ok(
+			(
+				Prev.hasClass( classname ) &&
+				PrevBtn.is( '[tabindex]' ) &&
+				!Next.hasClass( classname ) &&
+				!NextBtn.is( '[tabindex]' )
+			),
+			'Prev button is disabled on first slide when loop == false'
+		);
+		
+		API.data.timerChangeF();
+		API.showSlide( 2, 0 );
+		assert.ok(
+			(
+				!Prev.hasClass( classname ) &&
+				!PrevBtn.is( '[tabindex]' ) &&
+				Next.hasClass( classname ) &&
+				NextBtn.is( '[tabindex]' )
+			),
+			'Next button is disabled on last slide when loop == false'
+		);
+		
+		// Action trigger
+		API.data.timerChangeF();
+		var current1 = API.data.current;
+		PrevBtn.trigger( 'click' );
+		var current2 = API.data.current;
+		assert.ok(
+			(
+				current1 === 2 &&
+				current2 === 1
+			),
+			'Prev button works'
+		);
+		
+		API.data.timerChangeF();
+		NextBtn.trigger( 'click' );
+		var current3 = API.data.current;
+		assert.ok(
+			(
+				current2 === 1 &&
+				current3 === 2
+			),
+			'Next button works'
+		);
+		
+		// Destroy
+		var eventHandler1 = $._data( Slider[0], 'events' ).slideshowupdate.length;
+		API.destroy();
+		var eventHandler2 = $._data( Slider[0], 'events' );
+		assert.ok(
+			(
+				eventHandler1 > 0 &&
+				typeof eventHandler2 === 'undefined'
+			),
+			'on destroy: slideshowupdate event handler removed'
+		);
+		
+		assert.ok(
+			(
+				Prev.html() === prevText1 &&
+				Next.html() === nextText1
+			),
+			'on destroy: text is restored on both links'
+		);
+	});
+	
+	
+	// Play/Stop
+	// --------------------------------------------------
+	QUnit.test( 'Play/Stop', function( assert ) {
+		
+		// Setup
+		var Slider = $('<div>').appendTo( Fixture );
+		var Slides = $('<div class="slide"></div><div class="slide"></div><div class="slide"></div>').appendTo( Slider );
+		
+		// Create Controls
+		var defaultText = 'play/pause';
+		var playText = 'Play';
+		var stopText = 'Stahp!';
+		var Play = $('<div class="play">').text( defaultText ).appendTo( Slider );
+		
+		// Init
+		var API = Slider[ pluginName ]({
+			controlsPlay: '.play',
+			textPlay: playText,
+			textStop: stopText,
+			autoplay: false,
+		}).data( pluginName );
+		
+		// Select button
+		var PlayBtn = Play.children('a[role=button][href]');
+		
+		// API.settings
+		assert.ok(
+			(
+				API.settings.hasOwnProperty( 'controlsPlay' ) &&
+				API.settings.hasOwnProperty( 'textPlay' ) &&
+				API.settings.hasOwnProperty( 'textStop' )
+			),
+			'API.settings has controlsPlay, textPlay and textStop'
+		);
+		
+		//
+		assert.ok(
+			(
+				PlayBtn.html() === playText
+			),
+			'selector and textPlay is working'
+		);
+		
+		API.play();
+		assert.ok(
+			(
+				PlayBtn.html() === stopText
+			),
+			'textStop is working'
+		);
+		
+		// Trigger functions
+		var isPlaying1 = API.data.isPlaying;
+		PlayBtn.trigger( 'click' );
+		var isPlaying2 = API.data.isPlaying;
+		PlayBtn.trigger( 'click' );
+		var isPlaying3 = API.data.isPlaying;
+		assert.ok(
+			(
+				isPlaying1 === true &&
+				isPlaying2 === false &&
+				isPlaying3 === true
+			),
+			'Button triggers play()/stop()'
+		);
+		
+		// Destroy
+		API.destroy();
+		assert.ok(
+			(
+				Play.html() === defaultText
+			),
+			'on destroy: text is restored'
+		);
+	});
+	
+	
+	// Nav Items
+	// --------------------------------------------------
+	QUnit.test( 'Nav Items', function( assert ) {
+		
+		var Slider, Slides, API;
+		var slideName = 'Lorem Ipsum';
+		var defaultText = 'item';
+		var newText1 = 'Item text {title}';
+		var newText2 = 'Item text {title} selected';
+		var basicsChecked = false;
+		
+		function setupTest( numberOfItems ) {
+			
+			// Setup
+			Slider = $('<div>').appendTo( Fixture );
+			Slides = $('<div class="slide"></div><div class="slide" data-slide-title="'+slideName+'"></div><div class="slide"></div>').appendTo( Slider );
+			
+			// Create items
+			var Items = $();
+			for( var i=0; i<numberOfItems; i++ ) {
+				Items = Items.add( $('<div>',{ 'class':'navitem', text:defaultText+i }) );
+			}
+			Items.appendTo( Slider );
+			
+			// Init
+			API = Slider[ pluginName ]({
+				controlsItems: '.navitem',
+				textItem: newText1,
+				textCurrentItem: newText2,
+				autoplay: false,
+			}).data( pluginName );
+			
+			// Get Buttons
+			var ItemsBtns = Slider.find( 'a[role=button][href]' );
+			
+			
+			// ----- Basics
+			if( !basicsChecked ) {
+				
+				// API.settings
+				assert.ok(
+					(
+						API.settings.hasOwnProperty( 'controlsItems' ) &&
+						API.settings.hasOwnProperty( 'textItem' ) &&
+						API.settings.hasOwnProperty( 'textCurrentItem' )
+					),
+					'API.settings has controlsItems, textItem and textCurrentItem'
+				);
+				
+				// settings work
+				assert.ok(
+					(
+						ItemsBtns.eq(0).html() === newText2.replace( '{title}', 1 ) &&
+						ItemsBtns.eq(1).html() === newText1.replace( '{title}', slideName ) &&
+						ItemsBtns.eq(2).html() === newText1.replace( '{title}', 3 )
+					),
+					'settings work as expected, as well as slides using the data-slide-title attribute'
+				);
+				basicsChecked = true;
+				
+				// buttons work
+				var current1 = API.data.current;
+				API.data.timerChangeF();
+				ItemsBtns.eq(2).click();
+				var current2 = API.data.current;
+				API.data.timerChangeF();
+				ItemsBtns.eq(1).click();
+				var current3 = API.data.current;
+				assert.ok(
+					(
+						current1 === 0 &&
+						current2 === 2 &&
+						current3 === 1
+					),
+					'Buttons change slide on click'
+				);
+				
+				// change class of items
+				var correctClasses = true;
+				var correctText = true;
+				ItemsBtns.each(function(i){
+					var btn = $(this);
+					var item = btn.parent();
+					if( i == API.data.current ) {
+						
+						if(
+							btn.html() !== newText2.replace( '{title}', i+1 ) &&
+							btn.html() !== newText2.replace( '{title}', slideName )
+						)
+							correctText = false;
+						if( !item.hasClass( API.settings.classSelected ) )
+							correctClasses = false;
+						
+					} else {
+						
+						if(
+							btn.html() !== newText1.replace( '{title}', i+1 ) &&
+							btn.html() !== newText1.replace( '{title}', slideName )
+						)
+							correctText = false;
+						if( item.hasClass( API.settings.classSelected ) )
+							correctClasses = false;
+						
+					}
+				});
+				assert.ok(
+					correctClasses && correctText,
+					'items get the correct class name (settings.classSelected), and use the correct text'
+				);
+				
+			}
+			
+			// --- Recurrent
+			assert.ok(
+				Slider.find('.navitem:visible').length == Slides.length,
+				'Test with '+numberOfItems+': number of visible items always match number of slides'
+			);
+			assert.ok(
+				Slider.find('.navitem:hidden').length == ( Math.max( 0, numberOfItems - Slides.length ) ),
+				'Test with '+numberOfItems+': extra items should always be hidden'
+			);
+			
+			
+			// Destroy
+			API.destroy();
+			
+			// Count items again
+			var ItemsAfter = Slider.find( '.navitem:visible' );
+			assert.ok(
+				ItemsAfter.length === numberOfItems,
+				'Test with '+numberOfItems+': destroy restores original number of items'
+			);
+			
+			// Check text
+			var textMatches = true;
+			var classMatches = true;
+			ItemsAfter.each(function(i){
+				if( $(this).html() !== defaultText+i ) {
+					textMatches = false;
+				}
+				if( $(this).hasClass( API.settings.classSelected ) )
+					classMatches = false;
+			});
+			
+			assert.ok(
+				textMatches && classMatches,
+				'Test with '+numberOfItems+': destroy restores original text of items and removes selected class'
+			);
+			
+			// Clean up
+			Fixture.empty();
+		}
+		
+		setupTest( 1 );
+		setupTest( 3 );
+		setupTest( 5 );
+	});
 	
 	
 	

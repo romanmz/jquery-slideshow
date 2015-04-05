@@ -45,7 +45,19 @@
 				Timer.stop().css({ left:0, width:0 });
 			});
 			
-			$('.slider-status').on( 'click', SliderAPI.destroy );
+			// Update counter
+			var Current = $('.current');
+			var Total = $('.total');
+			Slider.on( 'slideshowupdate', function(){
+				Current.text( SliderAPI.data.current+1 );
+				Total.text( SliderAPI.data.total );
+			});
+			
+			// Reset
+			$('.destroy').on( 'click', function(e){
+				SliderAPI[ SliderAPI.data ? 'destroy' : 'init' ]();
+				e.preventDefault()
+			});
 			
 		});
 	</script>
@@ -64,6 +76,8 @@
 			<span class="current">1</span>
 			of
 			<span class="total">3</span>
+			
+			<a class="destroy" href="#">(reset)</a>
 		</p>
 		<ul class="slider-ctrls">
 			<li class="prev">Previous</li>
