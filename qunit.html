@@ -1006,7 +1006,6 @@
 	play() on mouseleave AND focusout AND if slider was playing before mouseenter/focusin
 	Event handlers are removed on destroy
 	Check that data.isChanging shows the correct direction (1 or -1)
-	Check conflict when manually calling play/stop and there\'s keyboard focus on the slider
 	
 	
 	PREV/NEXT
@@ -1041,6 +1040,33 @@
 		change: change text
 	destroy
 		restore markup of controls.play
+	
+	
+	ITEMS
+	settings:
+		controlsItems
+		textItem
+		textCurrentItem
+	private:
+		slideTitleAttr
+	markup:
+		Use existing selected items
+		Create missing ones based on last one
+		or remove exceeding ones
+		use slideTitleAttr for custom titles
+		controls.items must always match markup
+		controls.itemsBtns must match controls.items
+	trigger:
+		items: show matching slide
+		change: if corresponds to selected slide, change classSelected on <li> and text on <a>
+	destroy:
+		restore markup of initial items
+		restore classnames of initial items
+		remove auto generated items
+		or restore exceeding items
+		
+	
+	Check conflict with play/stop button, manual hover/focus on slider, and auto-focus after clicking on nav items
 	*/
 	
 	

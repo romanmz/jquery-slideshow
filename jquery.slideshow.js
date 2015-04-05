@@ -18,22 +18,25 @@
 		showFirst:			1,
 		autoplay:			false,
 		keyboard:			true,
-		pauseOnFocus:		false,
 		loop:				false,
 		useTouch:			true,
 		controlsPrev:		'',
 		controlsNext:		'',
 		controlsPlay:		'',
+		controlsItems:		'',
 		textPrev:			'«<span class="visuallyhidden"> Previous slide</span>',
 		textNext:			'<span class="visuallyhidden">Next slide </span>»',
 		textPlay:			'<span class="visuallyhidden">Play Animation </span>▶',
 		textStop:			'<span class="visuallyhidden">Stop Animation </span>￭',
+		textItem:			'<span class="visuallyhidden">Slide </span>{title}',
+		textCurrentItem:	'<span class="visuallyhidden">Slide </span>{title}<span class="visuallyhidden"> (current slide)</span>',
 		classSelected:		'selected',
 		classTransition:	'transitioning',
 		classPlaying:		'playing',
 		classDisabled:		'disabled',
 	};
 	var initialData = name+'-initial-data';
+	var slideTitleAttr = 'slide-title';
 	
 	
 	// Public Shared Data
@@ -123,32 +126,6 @@
 				});
 			}
 			
-			// Pause on hover/focus
-			if( settings.pauseOnFocus ) {
-				
-				// Init vars
-				var wasPlaying = data.isPlaying;
-				var focused = false;
-				var hovered = false;
-				
-				// On mouseenter / focusin
-				element
-				.on( 'mouseenter.'+name+' focusin.'+name, function(e){
-					if( !hovered && !focused )		wasPlaying = data.isPlaying;
-					if( e.type == 'mouseenter' )	hovered = true;
-					else if( e.type == 'focusin' )	focused = true;
-					stop();
-				})
-				
-				// On mouseleave / focusout
-				.on( 'mouseleave.'+name+' focusout.'+name, function(e){
-					if( e.type == 'mouseleave' )	hovered = false;
-					else if( e.type == 'focusout' )	focused = false;
-					if( !hovered && !focused && wasPlaying )
-						play();
-				});
-			}
-			
 			// Create controls
 			createControls();
 			
@@ -190,6 +167,15 @@
 				controls.next.html( controls.next.data( initialData ) );
 			if( controls.play )
 				controls.play.html( controls.play.data( initialData ) );
+			if( controls.itemsAdded )
+				controls.itemsAdded.remove();
+			if( controls.itemsHidden )
+				controls.itemsHidden.css( 'display', '' );
+			if( controls.items ) {
+				controls.items.each(function(){
+					$(this).html( $(this).data( initialData ) ).removeClass( settings.classSelected );
+				});
+			}
 			
 			// Delete properties and methods
 			delete Plugin.slides;
@@ -340,6 +326,7 @@
 			
 			// Button template
 			var btn = $('<a>',{ href:'#', role:'button' });
+			var eventname = 'click.'+name;
 			
 			// Create prev/next
 			controls.prev		= $( settings.controlsPrev );
@@ -348,11 +335,11 @@
 			controls.next.data( initialData, controls.next.html() ).empty();
 			controls.prevBtn	= btn.clone().html( settings.textPrev ).appendTo( controls.prev );
 			controls.nextBtn	= btn.clone().html( settings.textNext ).appendTo( controls.next );
-			controls.prevBtn.on( 'click.'+name, function(e){
+			controls.prevBtn.on( eventname, function(e){
 				showPrevious();
 				e.preventDefault();
 			});
-			controls.nextBtn.on( 'click.'+name, function(e){
+			controls.nextBtn.on( eventname, function(e){
 				showNext();
 				e.preventDefault();
 			});
@@ -361,11 +348,55 @@
 			controls.play		= $( settings.controlsPlay );
 			controls.play.data( initialData, controls.play.html() ).empty();
 			controls.playBtn	= btn.clone().html( settings.textPlay ).appendTo( controls.play );
-			controls.playBtn.on( 'click.'+name, function(e){
+			controls.playBtn.on( eventname, function(e){
 				if( data.isPlaying )
 					stop();
 				else
 					play();
+				e.preventDefault();
+			});
+			
+			// Create items
+			controls.items			= $( settings.controlsItems );
+			controls.itemsBtns		= $();
+			controls.itemsHidden	= $();
+			controls.itemsAdded		= $();
+			if( controls.items.length ) {
+				for( var i=0; i<data.total; i++ ) {
+					
+					// Select existing item, or create a new one
+					var item = controls.items.eq( i );
+					if( !item.length ) {
+						item = controls.items.last().clone().insertAfter( controls.items.last() );
+						controls.itemsAdded	= controls.itemsAdded.add( item );
+						controls.items		= controls.items.add( item );
+					} else {
+						item.data( initialData, item.html() );
+					}
+					
+					// Check if slides have title data attribute, if not use number
+					var title = slides.eq( i ).data( slideTitleAttr );
+					if( !title )
+						title = i + 1;
+					
+					// Get text variations
+					var textItem		= settings.textItem.replace( '{title}', title );
+					var textCurrentItem	= settings.textCurrentItem.replace( '{title}', title );
+					
+					// Create button
+					var itemBtn = btn.clone().html( textItem );
+					itemBtn.data( 'item-text', textItem ).data( 'current-item-text', textCurrentItem );
+					
+					// Add to collection
+					item.empty().append( itemBtn );
+					controls.itemsBtns = controls.itemsBtns.add( itemBtn );
+				}
+				controls.itemsHidden	= controls.items.slice( data.total ).hide();
+				controls.items			= controls.items.slice( 0, data.total );
+			}
+			controls.itemsBtns.on( eventname, function(e){
+				var number = controls.itemsBtns.index( $(this) );
+				showSlide( number );
 				e.preventDefault();
 			});
 			
@@ -405,6 +436,19 @@
 			} else {
 				controls.playBtn.html( settings.textPlay );
 			}
+			
+			// Update items
+			controls.itemsBtns.each(function(i){
+				var btn  = $(this);
+				var item = btn.parent();
+				if( i == data.current ) {
+					item.addClass( settings.classSelected );
+					btn.html( btn.data( 'current-item-text' ) );
+				} else {
+					item.removeClass( settings.classSelected );
+					btn.html( btn.data( 'item-text' ) );
+				}
+			});
 			
 			// Return
 			return Plugin;
