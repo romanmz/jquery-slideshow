@@ -51,7 +51,7 @@
 	
 	// Instance Data
 	// ------------------------------
-	$[name] = function( element, settings ) {
+	$[name] = function( element, settings, onlyBuild ) {
 		
 		// Convert $.function() to new $.function()
 		if( typeof this == 'function' ) {
@@ -69,9 +69,9 @@
 		var controls = {};
 		
 		
-		// Init
+		// Build
 		// ------------------------------
-		var init = function( newSettings ) {
+		var build = function( newSettings ) {
 
 			// Instantiate only once
 			if( element.data( name ) )
@@ -104,6 +104,7 @@
 				settings: settings,
 				data: data,
 
+				build: build,
 				init: init,
 				destroy: destroy,
 				showSlide: showSlide,
@@ -138,6 +139,18 @@
 			
 			// Create controls
 			createControls();
+			
+			// Return
+			return Plugin;
+		};
+		
+		
+		// Init
+		// ------------------------------
+		var init = function( newSettings ) {
+			
+			// Make sure to build object
+			Plugin = build( newSettings );
 			
 			// Trigger event
 			element.trigger( 'slideshowinit' );
@@ -472,7 +485,7 @@
 		
 		// Init and Return
 		// ------------------------------
-		return init();
+		return onlyBuild ? build() : init();
 	}
 	
 	
