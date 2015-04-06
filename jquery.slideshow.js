@@ -195,6 +195,7 @@
 			
 			// Remove instance and return
 			element.removeData( name );
+			element.trigger( 'slideshowdestroy' );
 			return Plugin;
 		};
 		
