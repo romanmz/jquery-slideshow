@@ -111,6 +111,7 @@
 				showNext: showNext,
 				play: play,
 				stop: stop,
+				restrictNumber: restrictNumber,
 			} );
 			
 			// Continue only if there's 2 slides or more
@@ -142,11 +143,7 @@
 			element.trigger( 'slideshowinit' );
 			
 			// Show first slide
-			if( settings.showFirst == 'random' ) {
-				var firstSlide = Math.floor( Math.random() * data.total );
-			} else {
-				var firstSlide = settings.showFirst - 1;
-			}
+			var firstSlide = settings.showFirst == 'random' ? Math.floor( Math.random() * data.total ) : settings.showFirst - 1;
 			showSlide( firstSlide, 0 );
 			
 			// Return
@@ -194,10 +191,24 @@
 			delete Plugin.showNext;
 			delete Plugin.play;
 			delete Plugin.stop;
+			delete Plugin.restrictNumber;
 			
 			// Remove instance and return
 			element.removeData( name );
 			return Plugin;
+		};
+		
+		
+		// Restrict Number
+		// ------------------------------
+		var restrictNumber = function( number ) {
+			var lastSlide = data.total-1;
+			if( number > lastSlide ) {
+				number = settings.loop ? 0 : lastSlide;
+			} else if( number < 0 ) {
+				number = settings.loop ? lastSlide : 0;
+			}
+			return number;
 		};
 		
 		
@@ -209,14 +220,7 @@
 			newSlide = parseInt( newSlide );
 			if( isNaN( newSlide ) ) throw Error( 'showSlide() requires a number as the first argument' );
 			if( typeof speed == 'undefined' ) speed = settings.speed;
-			
-			// Restrict newSlide
-			var lastSlide = data.total-1;
-			if( newSlide > lastSlide ) {
-				newSlide = settings.loop ? 0 : lastSlide;
-			} else if( newSlide < 0 ) {
-				newSlide = settings.loop ? lastSlide : 0;
-			}
+			newSlide = restrictNumber( newSlide );
 			
 			// Check status
 			if( data.isChanging || newSlide == data.current ) {
