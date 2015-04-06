@@ -215,7 +215,7 @@
 		
 		// Show Slide
 		// ------------------------------
-		var showSlide = function( newSlide, speed, direction ) {
+		var showSlide = function( newSlide, speed, direction, force ) {
 			
 			// Check arguments
 			newSlide = parseInt( newSlide );
@@ -224,7 +224,7 @@
 			newSlide = restrictNumber( newSlide );
 			
 			// Check status
-			if( data.isChanging || newSlide == data.current ) {
+			if( !force && ( data.isChanging || newSlide == data.current ) ) {
 				return Plugin;
 			}
 			
@@ -232,7 +232,6 @@
 			data.previous	= ( typeof data.current != 'undefined' && data.current != newSlide ) ? data.current : undefined;
 			data.current	= newSlide;
 			data.speed		= speed;
-			clearTimeout( data.timerChange );
 			
 			// Determine direction
 			if( !direction )
@@ -240,6 +239,7 @@
 			data.isChanging	= direction;
 			
 			// Set timer
+			clearTimeout( data.timerChange );
 			data.timerChangeF = function(){
 				
 				// Update data
@@ -255,12 +255,13 @@
 					play();
 				}
 			};
-			data.timerChange = setTimeout( data.timerChangeF, data.speed );
 			
-			// Trigger event
+			// Trigger events
 			updateAttributes();
 			element.trigger( 'slideshowchangestart' );
+			data.timerChange = setTimeout( data.timerChangeF, data.speed );
 			
+			// Return
 			return Plugin;
 		};
 		
