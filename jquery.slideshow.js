@@ -1,5 +1,5 @@
 /*
- * slideshow v0.6
+ * slideshow v0.61
  * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
@@ -131,7 +131,7 @@
 			
 			// Pause on hover/focus
 			if( settings.pauseOnFocus ) {
-				element.on( 'focusin.'+name, function(e){
+				slides.on( 'focusin.'+name, function(e){
 					if( data.isPlaying )
 						stop();
 				});
