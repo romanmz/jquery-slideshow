@@ -1,5 +1,5 @@
 /*
- * slideshow v0.61
+ * slideshow v0.62
  * http://github.com/romanmz/slideshow
  * By Roman Martinez - http://romanmz.com
  */
@@ -247,8 +247,12 @@
 			data.speed		= speed;
 			
 			// Determine direction
-			if( !direction )
-				direction = ( data.current - !!data.previous >= 0 ) ? 1 : -1;
+			if( !direction ) {
+				if( typeof data.previous == 'undefined' )
+					direction = 1;
+				else
+					direction = ( data.current - data.previous >= 0 ) ? 1 : -1;
+			}
 			data.isChanging	= direction;
 			
 			// Set timer
